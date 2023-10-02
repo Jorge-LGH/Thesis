@@ -26,12 +26,19 @@ features_tsv <- read.table("1_Data/GSM5276935_features-36186L.tsv")
 # barcodes serving as identifiers for each cell
 barcodes_tsv <- read.table("1_Data/GSM5276935_barcodes-36186L.tsv")
 
-#--------Loading matrix RNA counts--------------s 
+#--------Loading matrix RNA counts--------------
 # Counts for each gene per cell gene x cell
 matrix_tsv <- readMM("1_Data/GSM5276935_matrix-36186L.mtx")
 
-# 
-estimate_signatures <- read.csv("1_Data/ESTIMATE_signatures.csv")
+#--------Combine datasets-----------------------
+# This is done for the creation of the Seurat object that will be manipulated down the line
+colnames(matrix_tsv) <- barcodes_tsv[[1]] # add column names, they represent the cell barcode
+                                          # identifiers for the cells in this case
+rownames(matrix_tsv) <- features_tsv[ ,2] # add rpw names, they represent the features or the
+                                          # gene identifiers
 
-# 
-grch38_annotations <- read.table("1_Data/Homo_sapiens.GRCh38.86.txt")
+#-------Save objects----------------------------
+save(matrix_tsv, file = "1_Data/matrix_tsv.RData")
+save(features_tsv, file = "1_Data/features_tsv.RData")
+save(barcodes_tsv, file = "1_Data/barcodes_tsv.RData")
+save(panglaodb, file = "1_Data/panglaodb.RData")

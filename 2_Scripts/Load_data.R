@@ -35,7 +35,7 @@ matrix_tsv <- readMM("1_Data/GSM5276935_matrix-36186L.mtx")
 # This is done for the creation of the Seurat object that will be manipulated down the line
 colnames(matrix_tsv) <- barcodes_tsv[[1]] # add column names, they represent the cell barcode
                                           # identifiers for the cells in this case
-rownames(matrix_tsv) <- features_tsv[ ,2] # add rpw names, they represent the features or the
+rownames(matrix_tsv) <- features_tsv[ ,2] # add row names, they represent the features or the
                                           # gene identifiers
 
 #-------Save objects----------------------------

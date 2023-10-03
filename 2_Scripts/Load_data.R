@@ -28,6 +28,7 @@ barcodes_tsv <- read.table("1_Data/GSM5276935_barcodes-36186L.tsv")
 
 #--------Loading matrix RNA counts--------------s 
 # Counts for each gene per cell gene x cell
+# 33538 features (genes) and 6054 cells
 matrix_tsv <- readMM("1_Data/GSM5276935_matrix-36186L.mtx")
 
 # 

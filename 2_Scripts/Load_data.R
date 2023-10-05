@@ -1,8 +1,6 @@
-# Load all necessary libraries
+#----------Load all necessary libraries------------
 library(dplyr)
 library(Matrix)
-
-# Loading necessary data and explain a little 
 
 #---------panglao data base----------------
 tsv <- gzfile("1_Data/PanglaoDB_markers_27_Mar_2020.tsv.gz") # This is a database with cell type markers

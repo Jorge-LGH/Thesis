@@ -54,3 +54,11 @@ var_genes_plot <- variance_data %>%
 var_genes_plot
 ggsave("3_Figures/var_genes_plot.png")
 
+#-----------Scaling data----------------
+all_genes <- rownames(seu_ob)
+seu_ob <- ScaleData(seu_ob, features = all_genes) # check for possible models
+
+
+
+
+

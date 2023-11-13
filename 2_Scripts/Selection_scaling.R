@@ -55,10 +55,19 @@ var_genes_plot
 ggsave("3_Figures/var_genes_plot.png")
 
 #-----------Scaling data----------------
-all_genes <- rownames(seu_ob)
-seu_ob <- ScaleData(seu_ob, features = all_genes) # check for possible models
+all_genes <- rownames(seu_ob) # all gene names
+seu_ob <- ScaleData(seu_ob, features = all_genes) # check for possible models like linear and whatnot
 
+# Running dimensional reductions, they might be PCA or TSNE
+# Must check the pros and cons for each method, I think the standard is PCA but it might be a little bit skewed
+# Perhaps even UMAP might be the answer
+seu_ob <- RunPCA(seu_ob)
+seu_ob <- RunTSNE(seu_ob)
 
-
-
+pca_plot <- DimPlot(seu_ob, reduction = "pca")
+tsne_plot <- DimPlot(seu_ob, reduction = "tsne")
+pca_plot
+tsne_plot
+save(pca_plot, file = "3_Figures/pca_plot.RData")
+# save(tsne_plot, file = "3_Figures/tsne_plot.RData")
 

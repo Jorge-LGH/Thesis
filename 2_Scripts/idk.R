@@ -8,6 +8,8 @@ library(tidyverse)
 library(infercnv)
 library(stringr)
 library(psych)
+library(celldex)
+library(SingleR)
 
 #----------------------------------------------------#
 #-------------------Datasets-------------------------
@@ -1459,3 +1461,11 @@ ref.data.HPCA <- HCPA_celldex
 load("1_Data/BlueprintEncode_celldex.rds")
 ref.data.BED <- BlueprintEncode_celldex
 
+# 2) Single-cell level label transfer: 
+predictions.HPCA.sc <- SingleR(test=rna.sce, assay.type.test="logcounts", assay.type.ref="logcounts",
+                               ref=ref.data.HPCA, labels=ref.data.HPCA$label.main)
+predictions.BED.sc <- SingleR(test=rna.sce, assay.type.test="logcounts", assay.type.ref="logcounts",
+                              ref=ref.data.BED, labels=ref.data.BED$label.main)
+# Use de.method wilcox with scRNA-seq reference b/c the reference data is more sparse
+predictions.endo.sc <- SingleR(test=rna.sce, assay.type.test="logcounts", assay.type.ref="logcounts",
+                               ref=ref.data.endo, labels=ref.data.endo$cell_type,de.method = "wilcox")

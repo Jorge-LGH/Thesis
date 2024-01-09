@@ -10,6 +10,7 @@ library(stringr)
 library(psych)
 library(celldex)
 library(SingleR)
+library(scran)
 
 #----------------------------------------------------#
 #-------------------Datasets-------------------------
@@ -1469,3 +1470,36 @@ predictions.BED.sc <- SingleR(test=rna.sce, assay.type.test="logcounts", assay.t
 # Use de.method wilcox with scRNA-seq reference b/c the reference data is more sparse
 predictions.endo.sc <- SingleR(test=rna.sce, assay.type.test="logcounts", assay.type.ref="logcounts",
                                ref=ref.data.endo, labels=ref.data.endo$cell_type,de.method = "wilcox")
+
+rna$SingleR.HPCA <- predictions.HPCA.sc$pruned.labels
+rna$SingleR.BED <- predictions.BED.sc$pruned.labels
+rna$SingleR.endo <- predictions.endo.sc$pruned.labels
+
+# Save Seurat object 
+#date <- Sys.Date()
+saveRDS(rna,paste0(SAMPLE.ID,"_scRNA_processed.rds"))
+
+
+# ###########################################################################################################
+# # Starting cells, PostQC cells, doublets, Post doublet/QC cells, Cluster #
+output.meta <- data.frame(StartingNumCells=length(colnames(matrix_tsv)),
+                          nMADLogCounts =2,
+                          nMADLogFeatures = 2,
+                          nMADLog1pMito =2,
+                          PostQCNumCells=PostQCNumCells,
+                          ExpectedDoubletFraction=doublet.rate,
+                          ObservedDoubletFraction=length(doublets)/length(colnames(matrix_tsv)),
+                          PostDoubletNumCells=length(colnames(rna)),
+                          NumClusters=length(levels(Idents(rna))),
+                          DoubletFinderpK = pK.1,
+                          MinNumCounts=min(rna$nCount_RNA),
+                          MaxNumCounts= max(rna$nCount_RNA),
+                          MedianNumbCounts = median(rna$nCount_RNA),
+                          MinNumFeats=min(rna$nFeature_RNA),
+                          MaxNumFeats= max(rna$nFeature_RNA),
+                          MedianNumbFeats = median(rna$nFeature_RNA),
+                          stringsAsFactors=FALSE)
+output <- as.data.frame(t(output.meta))
+colnames(output) <- SAMPLE.ID
+xlsx::write.xlsx(output, "scRNA_pipeline_summary.xlsx",
+                 row.names = T, col.names = TRUE)

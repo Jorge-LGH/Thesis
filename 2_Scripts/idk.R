@@ -1408,3 +1408,54 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   boxplot.cnv+ggsave("Postdoublet_CNV_PC1_boxplot.png")
   saveRDS(rna,"1_Data/rna_postdoublet_SkipChecks.rds")
 }
+
+Idents(rna)<- "RNA_snn_res.0.7"
+
+# DEG analysis with Wilcox
+##########################################################################
+
+# Wilcox
+Wilcox.markers <- FindAllMarkers(object =rna, min.pct = 0.25,only.pos = F,
+                                 test.use = "wilcox")
+saveRDS(Wilcox.markers,"1_Data/wilcox_DEGs.rds")
+
+
+###########################################################
+# Part 4: SingleR cell typing 
+###########################################################
+
+# SingleR labeling of celltypes
+##########################################################################
+rna.sce <- as.SingleCellExperiment(rna)
+
+# Set reference paths:
+# Wang et al. GSE111976
+ref.data.counts <- readRDS("1_Data/GSE111976_ct_endo_10x.rds")
+meta <- read.csv("1_Data/GSE111976_summary_10x_day_donor_ctype.csv")
+rownames(meta) <- meta$X
+
+length(which(rownames(meta) == colnames(ref.data.counts)))
+ref.data.endo <- CreateSeuratObject(ref.data.counts,meta.data = meta)
+Idents(ref.data.endo) <- "cell_type"
+ref.data.endo <- NormalizeData(ref.data.endo)
+
+# SingleR annotation
+#####################################################
+
+# Read in reference datasets for SingleR annotation 
+
+# 1) Slyper et al. Nat. Medicine 2020 scRNA-seq ovarian tumor 
+ref.data.endo <- as.SingleCellExperiment(ref.data.endo)
+
+# 2) Human Primary Cell Atlas Data (microarray)
+# HPCA_celldex <- HumanPrimaryCellAtlasData()
+# save(HCPA_celldex, file = "1_Data/HPCA_celldex.rds")
+load("1_Data/HPCA_celldex.rds")
+ref.data.HPCA <- HCPA_celldex
+ 
+# # 3) BluePrint Encode (bulk RNA-seq)
+# BlueprintEncode_celldex <- BlueprintEncodeData()
+# save(BlueprintEncode_celldex, file = "1_Data/BlueprintEncode_celldex.rds")
+load("1_Data/BlueprintEncode_celldex.rds")
+ref.data.BED <- BlueprintEncode_celldex
+

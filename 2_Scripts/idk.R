@@ -43,9 +43,9 @@ features_tsv <- read.table("1_Data/GSM5276935_features-36186L.tsv")
 #### Combine datasets
 # This is done for the creation of the Seurat object that will be manipulated down the line
 colnames(matrix_tsv) <- barcodes_tsv[[1]] # add column names, they represent the cell barcode
-                                          # identifiers for the cells in this case
+# identifiers for the cells in this case
 rownames(matrix_tsv) <- features_tsv[ ,2] # add row names, they represent the features or the
-                                          # gene identifiers
+# gene identifiers
 
 #### Load estimate signatures
 ESTIMATE.signatures <- "1_Data/ESTIMATE_signatures.csv"
@@ -68,10 +68,10 @@ SAMPLE.ID <- "endo_36186L"
 # data that was downloaded and set into the environment. However, it doesn't contemplate the gene identifiers for the cell
 # types that may exist in the samples
 rna <- CreateSeuratObject(matrix_tsv,
-                             project = "Endo_3", # Name of the project, could have more data
-                             assay = "RNA",      # Name of the initial assay
-                             min.cells = 3,      # min of cells that a feature must be present in
-                             min.features = 1)   # min of features a cell must have to be kept
+                          project = "Endo_3", # Name of the project, could have more data
+                          assay = "RNA",      # Name of the initial assay
+                          min.cells = 3,      # min of cells that a feature must be present in
+                          min.features = 1)   # min of features a cell must have to be kept
 
 PreQCNumCells <- length(colnames(rna)) # 6054 cells
 
@@ -122,7 +122,7 @@ feats <- list(stromal,immune,fibroblast,endothelial,epithelial,smooth,plasma)
 
 # add to immune signatures to cells
 rna <- AddModuleScore(rna, features = feats, name = c("stromal.","immune.","fibroblast.","endothelial.",
-                                                    "epithelial.","smooth.","plasma."), search = T)
+                                                      "epithelial.","smooth.","plasma."), search = T)
 #########################################################################
 
 #######################################################################
@@ -221,112 +221,112 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     # create the infercnv object
     if ( num.immune.clusters == 1) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=paste0("immune.",immune.clusters[1]))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=paste0("immune.",immune.clusters[1]))
       
     } else if (num.immune.clusters == 2) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2])))
       
     } else if ( num.immune.clusters == 3 ) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3])))
     } else if (num.immune.clusters == 4) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4])))
     } else if (num.immune.clusters == 5) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5])))
     } else if (num.immune.clusters == 6) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5]),
-                                                            paste0("immune.",immune.clusters[6])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5]),
+                                                             paste0("immune.",immune.clusters[6])))
     }else if (num.immune.clusters == 7) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5]),
-                                                            paste0("immune.",immune.clusters[6]),
-                                                            paste0("immune.",immune.clusters[7])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5]),
+                                                             paste0("immune.",immune.clusters[6]),
+                                                             paste0("immune.",immune.clusters[7])))
     }else if (num.immune.clusters == 8) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5]),
-                                                            paste0("immune.",immune.clusters[6]),
-                                                            paste0("immune.",immune.clusters[7]),
-                                                            paste0("immune.",immune.clusters[8])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5]),
+                                                             paste0("immune.",immune.clusters[6]),
+                                                             paste0("immune.",immune.clusters[7]),
+                                                             paste0("immune.",immune.clusters[8])))
     }else if (num.immune.clusters == 9) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5]),
-                                                            paste0("immune.",immune.clusters[6]),
-                                                            paste0("immune.",immune.clusters[7]),
-                                                            paste0("immune.",immune.clusters[8]),
-                                                            paste0("immune.",immune.clusters[9])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5]),
+                                                             paste0("immune.",immune.clusters[6]),
+                                                             paste0("immune.",immune.clusters[7]),
+                                                             paste0("immune.",immune.clusters[8]),
+                                                             paste0("immune.",immune.clusters[9])))
     }else if (num.immune.clusters == 10) {
       infercnv_obj <- CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
-                                          ref_group_names=c(paste0("immune.",immune.clusters[1]),
-                                                            paste0("immune.",immune.clusters[2]),
-                                                            paste0("immune.",immune.clusters[3]),
-                                                            paste0("immune.",immune.clusters[4]),
-                                                            paste0("immune.",immune.clusters[5]),
-                                                            paste0("immune.",immune.clusters[6]),
-                                                            paste0("immune.",immune.clusters[7]),
-                                                            paste0("immune.",immune.clusters[8]),
-                                                            paste0("immune.",immune.clusters[9]),
-                                                            paste0("immune.",immune.clusters[10])))
+                                           annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                           gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
+                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
+                                                             paste0("immune.",immune.clusters[2]),
+                                                             paste0("immune.",immune.clusters[3]),
+                                                             paste0("immune.",immune.clusters[4]),
+                                                             paste0("immune.",immune.clusters[5]),
+                                                             paste0("immune.",immune.clusters[6]),
+                                                             paste0("immune.",immune.clusters[7]),
+                                                             paste0("immune.",immune.clusters[8]),
+                                                             paste0("immune.",immune.clusters[9]),
+                                                             paste0("immune.",immune.clusters[10])))
     }
     
     # perform infercnv operations to reveal cnv signal
     infercnv_obj <- infercnv::run(infercnv_obj,
-                                 cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
-                                 out_dir="1_Data/output_dir_CNV_predoublet",  # dir is auto-created for storing outputs
-                                 cluster_by_groups=T,   # cluster
-                                 denoise=T,scale_data = T,
-                                 HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
-                                 BayesMaxPNormal = 0.4, num_threads = 8
-                                 
+                                  cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
+                                  out_dir="1_Data/output_dir_CNV_predoublet",  # dir is auto-created for storing outputs
+                                  cluster_by_groups=T,   # cluster
+                                  denoise=T,scale_data = T,
+                                  HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
+                                  BayesMaxPNormal = 0.4, num_threads = 8
+                                  
     )
     
     
@@ -424,22 +424,22 @@ newFiles$newGroupsFile <- as.data.frame.array(newFiles$newGroupsFile)
 
 #dev.off()
 results <- Main_Doublet_Decon(rawDataFile= newFiles$newExpressionFile,
-                           groupsFile = newFiles$newGroupsFile,
-                           filename= SAMPLE.ID,
-                           location= "1_Data/DoubletDecon",
-                           fullDataFile= NULL,
-                           removeCC= FALSE,
-                           species= "hsa",
-                           rhop= 1.1,
-                           write= F,
-                           PMF = TRUE,
-                           useFull= FALSE,
-                           heatmap= FALSE,
-                           centroids= TRUE,
-                           num_doubs= 100,
-                           only50= FALSE,
-                           min_uniq= 4,
-                           nCores= 4)
+                              groupsFile = newFiles$newGroupsFile,
+                              filename= SAMPLE.ID,
+                              location= "1_Data/DoubletDecon",
+                              fullDataFile= NULL,
+                              removeCC= FALSE,
+                              species= "hsa",
+                              rhop= 1.1,
+                              write= F,
+                              PMF = TRUE,
+                              useFull= FALSE,
+                              heatmap= FALSE,
+                              centroids= TRUE,
+                              num_doubs= 100,
+                              only50= FALSE,
+                              min_uniq= 4,
+                              nCores= 4)
 
 decon.doublets <- rownames(results$Final_doublets_groups)
 decon.doublets <- gsub("\\.","-",decon.doublets)
@@ -588,13 +588,13 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     
     
     colnames(idents) <- c("V1","V2")
-    saveRDS(rna,"./rna_postdoublet_preinferCNV.rds")
+    saveRDS(rna,"1_Data/rna_postdoublet_preinferCNV.rds")
     # Make inferCNV inputs
     
     rownames(idents) <- NULL
     colnames(idents) <- NULL
-    write.table(idents,"./sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
-    idents <- read.delim("./sample_annotation_file_inferCNV.txt",header = F)
+    write.table(idents,"1_Data/sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
+    idents <- read.delim("1_Data/sample_annotation_file_inferCNV.txt",header = F)
     
     
     
@@ -615,43 +615,43 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     gtf <- convert.symbol(gtf)
     head(gtf)
     
-    write.table(gtf,"./Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
+    write.table(gtf,"1_Data/Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
     
     
     num.immune.clusters = length(immune.clusters)
     # create the infercnv object
     if ( num.immune.clusters == 1) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=paste0("immune.",immune.clusters[1]))
       
     } else if (num.immune.clusters == 2) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2])))
       
     } else if ( num.immune.clusters == 3 ) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3])))
     } else if (num.immune.clusters == 4) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
                                                             paste0("immune.",immune.clusters[4])))
     } else if (num.immune.clusters == 5) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -659,8 +659,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[5])))
     } else if (num.immune.clusters == 6) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -669,8 +669,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[6])))
     }else if (num.immune.clusters == 7) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -680,8 +680,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[7])))
     }else if (num.immune.clusters == 8) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -692,8 +692,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[8])))
     }else if (num.immune.clusters == 9) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -705,8 +705,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[9])))
     }else if (num.immune.clusters == 10) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -721,7 +721,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     # perform infercnv operations to reveal cnv signal
     infercnv_obj = infercnv::run(infercnv_obj,
                                  cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
-                                 out_dir="./output_dir_CNV_postdoublet_PassedPC1Checks",  # dir is auto-created for storing outputs
+                                 out_dir="1_Data/output_dir_CNV_postdoublet_PassedPC1Checks",  # dir is auto-created for storing outputs
                                  cluster_by_groups=T,   # cluster
                                  denoise=T,scale_data = T,
                                  HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
@@ -731,8 +731,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     
     
     
-    regions <- read.delim("./output_dir_CNV_postdoublet_PassedPC1Checks/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
-    probs <- read.delim("./output_dir_CNV_postdoublet_PassedPC1Checks/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
+    regions <- read.delim("1_Data/output_dir_CNV_postdoublet_PassedPC1Checks/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
+    probs <- read.delim("1_Data/output_dir_CNV_postdoublet_PassedPC1Checks/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
     
     probs <- as.data.frame(t(probs[3,]))
     colnames(probs) <- "Prob.Normal"
@@ -769,7 +769,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       rna <- rna
       library(stringr)
       levels(Idents(rna)) <- str_remove(levels(Idents(rna)),"immune.")
-      saveRDS(rna,"./rna_postdoublet_PassedPC1Checks.rds")
+      saveRDS(rna,"1_Data/rna_postdoublet_PassedPC1Checks.rds")
     }else{
       all.genes <- rownames(rna)
       rna <- ScaleData(rna, features = all.genes,vars.to.regress = "nCount_RNA")
@@ -807,7 +807,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       }
       rna@meta.data$postdoublet.idents <- Idents(rna)
       idents <- data.frame(rownames(rna@meta.data),rna@meta.data$postdoublet.idents)
-      saveRDS(rna,"./rna_postdoublet_preinferCNV.rds")
+      saveRDS(rna,"1_Data/rna_postdoublet_preinferCNV.rds")
       #MAke inferCNV input
       
       colnames(idents) <- c("V1","V2")
@@ -815,8 +815,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       
       rownames(idents) <- NULL
       colnames(idents) <- NULL
-      write.table(idents,"./sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
-      idents <- read.delim("./sample_annotation_file_inferCNV.txt",header = F)
+      write.table(idents,"1_Data/sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
+      idents <- read.delim("1_Data/sample_annotation_file_inferCNV.txt",header = F)
       
       
       
@@ -837,43 +837,43 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       gtf <- convert.symbol(gtf)
       head(gtf)
       
-      write.table(gtf,"./Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
+      write.table(gtf,"1_Data/Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
       
       
       num.immune.clusters = length(immune.clusters)
       # create the infercnv object
       if ( num.immune.clusters == 1) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=paste0("immune.",immune.clusters[1]))
         
       } else if (num.immune.clusters == 2) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2])))
         
       } else if ( num.immune.clusters == 3 ) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3])))
       } else if (num.immune.clusters == 4) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
                                                               paste0("immune.",immune.clusters[4])))
       } else if (num.immune.clusters == 5) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -881,8 +881,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                               paste0("immune.",immune.clusters[5])))
       } else if (num.immune.clusters == 6) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -891,8 +891,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                               paste0("immune.",immune.clusters[6])))
       }else if (num.immune.clusters == 7) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -902,8 +902,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                               paste0("immune.",immune.clusters[7])))
       }else if (num.immune.clusters == 8) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -914,8 +914,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                               paste0("immune.",immune.clusters[8])))
       }else if (num.immune.clusters == 9) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -927,8 +927,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                               paste0("immune.",immune.clusters[9])))
       }else if (num.immune.clusters == 10) {
         infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                            annotations_file="./sample_annotation_file_inferCNV.txt",
-                                            gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                            annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                            gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                             ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                               paste0("immune.",immune.clusters[2]),
                                                               paste0("immune.",immune.clusters[3]),
@@ -953,8 +953,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       
       
       
-      regions <- read.delim("./output_dir_CNV_postdoublet_FailedCNVTest/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
-      probs <- read.delim("./output_dir_CNV_postdoublet_FailedCNVTest/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
+      regions <- read.delim("1_Data/output_dir_CNV_postdoublet_FailedCNVTest/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
+      probs <- read.delim("1_Data/output_dir_CNV_postdoublet_FailedCNVTest/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
       
       probs <- as.data.frame(t(probs[3,]))
       colnames(probs) <- "Prob.Normal"
@@ -979,7 +979,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       
       rna$Total_CNVs <- ifelse(as.character(rna$postdoublet.idents) %in% cnv.freq$Var1,cnv.freq$Freq,0)
       
-      saveRDS(rna,"./rna_postdoublet_FailedCNVTest.rds")
+      saveRDS(rna,"1_Data/rna_postdoublet_FailedCNVTest.rds")
     }
     
   }else{
@@ -1024,13 +1024,13 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     
     colnames(idents) <- c("V1","V2")
     
-    saveRDS(rna,"./rna_postdoublet_preinferCNV.rds")
+    saveRDS(rna,"1_Data/rna_postdoublet_preinferCNV.rds")
     # Make inferCNV inputs
     
     rownames(idents) <- NULL
     colnames(idents) <- NULL
-    write.table(idents,"./sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
-    idents <- read.delim("./sample_annotation_file_inferCNV.txt",header = F)
+    write.table(idents,"1_Data/sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
+    idents <- read.delim("1_Data/sample_annotation_file_inferCNV.txt",header = F)
     
     
     
@@ -1051,43 +1051,43 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     gtf <- convert.symbol(gtf)
     head(gtf)
     
-    write.table(gtf,"./Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
+    write.table(gtf,"1_Data/Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
     
     
     num.immune.clusters = length(immune.clusters)
     # create the infercnv object
     if ( num.immune.clusters == 1) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=paste0("immune.",immune.clusters[1]))
       
     } else if (num.immune.clusters == 2) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2])))
       
     } else if ( num.immune.clusters == 3 ) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3])))
     } else if (num.immune.clusters == 4) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
                                                             paste0("immune.",immune.clusters[4])))
     } else if (num.immune.clusters == 5) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1095,8 +1095,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[5])))
     } else if (num.immune.clusters == 6) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1105,8 +1105,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[6])))
     }else if (num.immune.clusters == 7) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1116,8 +1116,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[7])))
     }else if (num.immune.clusters == 8) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1128,8 +1128,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[8])))
     }else if (num.immune.clusters == 9) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1141,8 +1141,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                             paste0("immune.",immune.clusters[9])))
     }else if (num.immune.clusters == 10) {
       infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                          annotations_file="./sample_annotation_file_inferCNV.txt",
-                                          gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                          annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                          gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                           ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                             paste0("immune.",immune.clusters[2]),
                                                             paste0("immune.",immune.clusters[3]),
@@ -1167,8 +1167,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     
     
     
-    regions <- read.delim("./output_dir_CNV_postdoublet_FailedCorTest/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
-    probs <- read.delim("./output_dir_CNV_postdoublet_FailedCorTest/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
+    regions <- read.delim("1_Data/output_dir_CNV_postdoublet_FailedCorTest/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
+    probs <- read.delim("1_Data/output_dir_CNV_postdoublet_FailedCorTest/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
     
     probs <- as.data.frame(t(probs[3,]))
     colnames(probs) <- "Prob.Normal"
@@ -1192,7 +1192,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     cnv.freq$Var1 <- sub("\\..*", "", cnv.freq$Var1)
     
     rna$Total_CNVs <- ifelse(as.character(rna$postdoublet.idents) %in% cnv.freq$Var1,cnv.freq$Freq,0)
-    saveRDS(rna,"./rna_postdoublet_FailedCorTest.rds")
+    saveRDS(rna,"1_Data/rna_postdoublet_FailedCorTest.rds")
   }
 }else{
   
@@ -1234,12 +1234,12 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   
   
   colnames(idents) <- c("V1","V2")
-  saveRDS(rna,"./rna_postdoublet_preinferCNV.rds")
+  saveRDS(rna,"1_Data/rna_postdoublet_preinferCNV.rds")
   # Make inferCNV inputs
   rownames(idents) <- NULL
   colnames(idents) <- NULL
-  write.table(idents,"./sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
-  idents <- read.delim("./sample_annotation_file_inferCNV.txt",header = F)
+  write.table(idents,"1_Data/sample_annotation_file_inferCNV.txt",sep = "\t",row.names = FALSE)
+  idents <- read.delim("1_Data/sample_annotation_file_inferCNV.txt",header = F)
   
   
   
@@ -1260,7 +1260,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   gtf <- convert.symbol(gtf)
   head(gtf)
   
-  write.table(gtf,"./Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
+  write.table(gtf,"1_Data/Homo_sapiens.GRCh38.86.symbol.txt",sep = "\t",row.names = FALSE,col.names = FALSE)
   
   
   num.immune.clusters = length(immune.clusters)
@@ -1268,36 +1268,36 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   # create the infercnv object
   if ( num.immune.clusters == 1) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=paste0("immune.",immune.clusters[1]))
     
   } else if (num.immune.clusters == 2) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2])))
     
   } else if ( num.immune.clusters == 3 ) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3])))
   } else if (num.immune.clusters == 4) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
                                                           paste0("immune.",immune.clusters[4])))
   } else if (num.immune.clusters == 5) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1305,8 +1305,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                           paste0("immune.",immune.clusters[5])))
   } else if (num.immune.clusters == 6) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1315,8 +1315,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                           paste0("immune.",immune.clusters[6])))
   }else if (num.immune.clusters == 7) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1326,8 +1326,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                           paste0("immune.",immune.clusters[7])))
   }else if (num.immune.clusters == 8) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1338,8 +1338,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                           paste0("immune.",immune.clusters[8])))
   }else if (num.immune.clusters == 9) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1351,8 +1351,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
                                                           paste0("immune.",immune.clusters[9])))
   }else if (num.immune.clusters == 10) {
     infercnv_obj = CreateInfercnvObject(raw_counts_matrix=as.matrix(counts_matrix),
-                                        annotations_file="./sample_annotation_file_inferCNV.txt",
-                                        gene_order_file="./Homo_sapiens.GRCh38.86.symbol.txt",
+                                        annotations_file="1_Data/sample_annotation_file_inferCNV.txt",
+                                        gene_order_file="1_Data/Homo_sapiens.GRCh38.86.symbol.txt",
                                         ref_group_names=c(paste0("immune.",immune.clusters[1]),
                                                           paste0("immune.",immune.clusters[2]),
                                                           paste0("immune.",immune.clusters[3]),
@@ -1367,7 +1367,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   # perform infercnv operations to reveal cnv signal
   infercnv_obj = infercnv::run(infercnv_obj,
                                cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
-                               out_dir="./output_dir_CNV_postdoublet_SkipChecks",  # dir is auto-created for storing outputs
+                               out_dir="1_Data/output_dir_CNV_postdoublet_SkipChecks",  # dir is auto-created for storing outputs
                                cluster_by_groups=T,   # cluster
                                denoise=T,scale_data = T,
                                HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
@@ -1377,8 +1377,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   
   
   
-  regions <- read.delim("./output_dir_CNV_postdoublet_SkipChecks/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
-  probs <- read.delim("./output_dir_CNV_postdoublet_SkipChecks/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
+  regions <- read.delim("1_Data/output_dir_CNV_postdoublet_SkipChecks/HMM_CNV_predictions.HMMi6.hmm_mode-samples.Pnorm_0.4.pred_cnv_regions.dat")
+  probs <- read.delim("1_Data/output_dir_CNV_postdoublet_SkipChecks/BayesNetOutput.HMMi6.hmm_mode-samples/CNV_State_Probabilities.dat")
   
   probs <- as.data.frame(t(probs[3,]))
   colnames(probs) <- "Prob.Normal"
@@ -1406,5 +1406,5 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   
   boxplot.cnv <- ggplot(rna@meta.data,aes(x= postdoublet.idents,y=PC1.loading,color = as.factor(CNV.Pos)))+geom_boxplot()
   boxplot.cnv+ggsave("Postdoublet_CNV_PC1_boxplot.png")
-  saveRDS(rna,"./rna_postdoublet_SkipChecks.rds")
+  saveRDS(rna,"1_Data/rna_postdoublet_SkipChecks.rds")
 }

@@ -165,7 +165,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     # Verify with inferCNV: is PC1 correlated with CNV events/Malignancy?
     #########################################################################
     # inferCNV: is PC1 also correlated with CNV/malignancy status?
-    counts_matrix <- GetAssayData(rna, slot="counts")
+    counts_matrix <- GetAssayData(rna, layer="counts")
     
     # Identify immune clusters
     #######################################################
@@ -563,7 +563,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     library(infercnv)
     library(stringr)
     library(Seurat)
-    counts_matrix = GetAssayData(rna, slot="counts")
+    counts_matrix = GetAssayData(rna, layer="counts")
     
     # Identify immune clusters
     #######################################################
@@ -607,7 +607,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       ensembls <- Data$V1
       ensembls <- gsub("\\.[0-9]*$", "", ensembls)
       geneIDs1 <- ensembldb::select(EnsDb.Hsapiens.v86, keys= ensembls, keytype = "GENEID", columns = "SYMBOL")
-      Data <- cbind.fill(Data, geneIDs1, fill = NA)
+      Data <- rowr::cbind.fill(Data, geneIDs1, fill = NA)
       Data <- na.omit(Data)
       Data$feature <- Data$SYMBOL
       Data.new <- data.frame(Data$SYMBOL,Data$V2,Data$V3,Data$V4)
@@ -784,7 +784,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       library(infercnv)
       library(stringr)
       library(Seurat)
-      counts_matrix = GetAssayData(rna, slot="counts")
+      counts_matrix = GetAssayData(rna, layer="counts")
       
       
       # Identify immune clusters
@@ -829,7 +829,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
         ensembls <- Data$V1
         ensembls <- gsub("\\.[0-9]*$", "", ensembls)
         geneIDs1 <- ensembldb::select(EnsDb.Hsapiens.v86, keys= ensembls, keytype = "GENEID", columns = "SYMBOL")
-        Data <- cbind.fill(Data, geneIDs1, fill = NA)
+        Data <- rowr::cbind.fill(Data, geneIDs1, fill = NA)
         Data <- na.omit(Data)
         Data$feature <- Data$SYMBOL
         Data.new <- data.frame(Data$SYMBOL,Data$V2,Data$V3,Data$V4)
@@ -946,7 +946,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       # perform infercnv operations to reveal cnv signal
       infercnv_obj = infercnv::run(infercnv_obj,
                                    cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
-                                   out_dir="./output_dir_CNV_postdoublet_FailedCNVTest",  # dir is auto-created for storing outputs
+                                   out_dir="1_Data/output_dir_CNV_postdoublet_FailedCNVTest",  # dir is auto-created for storing outputs
                                    cluster_by_groups=T,   # cluster
                                    denoise=T,scale_data = T,
                                    HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
@@ -997,7 +997,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     library(infercnv)
     library(stringr)
     library(Seurat)
-    counts_matrix = GetAssayData(rna, slot="counts")
+    counts_matrix = GetAssayData(rna, layer="counts")
     
     # Identify immune clusters
     #######################################################
@@ -1043,7 +1043,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
       ensembls <- Data$V1
       ensembls <- gsub("\\.[0-9]*$", "", ensembls)
       geneIDs1 <- ensembldb::select(EnsDb.Hsapiens.v86, keys= ensembls, keytype = "GENEID", columns = "SYMBOL")
-      Data <- cbind.fill(Data, geneIDs1, fill = NA)
+      Data <- rowr::cbind.fill(Data, geneIDs1, fill = NA)
       Data <- na.omit(Data)
       Data$feature <- Data$SYMBOL
       Data.new <- data.frame(Data$SYMBOL,Data$V2,Data$V3,Data$V4)
@@ -1160,7 +1160,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     # perform infercnv operations to reveal cnv signal
     infercnv_obj = infercnv::run(infercnv_obj,
                                  cutoff=0.1,  # use 1 for smart-seq, 0.1 for 10x-genomics
-                                 out_dir="./output_dir_CNV_postdoublet_FailedCorTest",  # dir is auto-created for storing outputs
+                                 out_dir="1_Data/output_dir_CNV_postdoublet_FailedCorTest",  # dir is auto-created for storing outputs
                                  cluster_by_groups=T,   # cluster
                                  denoise=T,scale_data = T,
                                  HMM=T,HMM_type = "i6",analysis_mode = "samples",min_cells_per_gene = 10,
@@ -1208,7 +1208,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   library(infercnv)
   library(stringr)
   library(Seurat)
-  counts_matrix = GetAssayData(rna, slot="counts")
+  counts_matrix = GetAssayData(rna, layer="counts")
   
   
   # Identify immune clusters
@@ -1252,7 +1252,7 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     ensembls <- Data$V1
     ensembls <- gsub("\\.[0-9]*$", "", ensembls)
     geneIDs1 <- ensembldb::select(EnsDb.Hsapiens.v86, keys= ensembls, keytype = "GENEID", columns = "SYMBOL")
-    Data <- cbind.fill(Data, geneIDs1, fill = NA)
+    Data <- rowr::cbind.fill(Data, geneIDs1, fill = NA)
     Data <- na.omit(Data)
     Data$feature <- Data$SYMBOL
     Data.new <- data.frame(Data$SYMBOL,Data$V2,Data$V3,Data$V4)

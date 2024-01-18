@@ -361,7 +361,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     rna$Total_CNVs <- ifelse(as.character(rna$predoublet.idents) %in% cnv.freq$Var1,cnv.freq$Freq,0)
     
     boxplot.cnv <- ggplot(rna@meta.data,aes(x= predoublet.idents,y=PC1.loading,color = as.factor(CNV.Pos)))+geom_boxplot()
-    boxplot.cnv+ggsave("Predoublet_CNV_PC1_boxplot.png")
+    boxplot.cnv
+    ggsave(filename = "Predoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = "1_Data/")
     
     data <- describeBy(boxplot.cnv$data$PC1.loading, boxplot.cnv$data$predoublet.idents, mat = TRUE)
     data$CNV <- ifelse(data$group1 %in% cnv.groups,1,0)
@@ -761,7 +762,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
     rna$Total_CNVs <- ifelse(as.character(rna$postdoublet.idents) %in% cnv.freq$Var1,cnv.freq$Freq,0)
     
     boxplot.cnv <- ggplot(rna@meta.data,aes(x= postdoublet.idents,y=PC1.loading,color = as.factor(CNV.Pos)))+geom_boxplot()
-    boxplot.cnv+ggsave("postdoublet_CNV_PC1_boxplot.png")
+    boxplot.cnv
+    ggsave(filename = "postdoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = "1_Data/")
     
     data <- describeBy(boxplot.cnv$data$PC1.loading, boxplot.cnv$data$postdoublet.idents, mat = TRUE)
     data$CNV <- ifelse(data$group1 %in% cnv.groups,1,0)
@@ -1408,7 +1410,8 @@ if (round(abs(count_cor_PC1),2) > 0.5){
   
   
   boxplot.cnv <- ggplot(rna@meta.data,aes(x= postdoublet.idents,y=PC1.loading,color = as.factor(CNV.Pos)))+geom_boxplot()
-  boxplot.cnv+ggsave("Postdoublet_CNV_PC1_boxplot.png")
+  boxplot.cnv
+  ggsave(filename = "Postdoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = "1_Data/")
   saveRDS(rna,"1_Data/rna_postdoublet_SkipChecks.rds")
 }
 
@@ -1451,13 +1454,13 @@ ref.data.endo <- NormalizeData(ref.data.endo)
 ref.data.endo <- as.SingleCellExperiment(ref.data.endo)
 
 # 2) Human Primary Cell Atlas Data (microarray)
-# HPCA_celldex <- HumanPrimaryCellAtlasData()
-# save(HCPA_celldex, file = "1_Data/HPCA_celldex.rds")
+# HPCA_celldex <- celldex::HumanPrimaryCellAtlasData()
+# save(HPCA_celldex, file = "1_Data/HPCA_celldex.rds")
 load("1_Data/HPCA_celldex.rds")
-ref.data.HPCA <- HCPA_celldex
+ref.data.HPCA <- HPCA_celldex
  
 # # 3) BluePrint Encode (bulk RNA-seq)
-# BlueprintEncode_celldex <- BlueprintEncodeData()
+# BlueprintEncode_celldex <- celldex::BlueprintEncodeData()
 # save(BlueprintEncode_celldex, file = "1_Data/BlueprintEncode_celldex.rds")
 load("1_Data/BlueprintEncode_celldex.rds")
 ref.data.BED <- BlueprintEncode_celldex
@@ -1503,3 +1506,63 @@ output <- as.data.frame(t(output.meta))
 colnames(output) <- SAMPLE.ID
 xlsx::write.xlsx(output, "scRNA_pipeline_summary.xlsx",
                  row.names = T, col.names = TRUE)
+
+# SingleR predicted cell types 
+rna$SingleR <- rna$SingleR.endo
+
+# Adding module scores top Seurat object
+rna <- AddModuleScore(rna,features = list(panglaodb$`B cells`,
+                                                          panglaodb$`Plasma cells`,
+                                                          panglaodb$`Mast cells`,
+                                                          panglaodb$Macrophages,
+                                                          panglaodb$`Dendritic cells`,
+                                                          panglaodb$`T cells`,
+                                                          panglaodb$`NK cells`,
+                                                          panglaodb$`Endothelial cells`,
+                                                          panglaodb$Fibroblasts,
+                                                          panglaodb$`Epithelial cells`,
+                                                          panglaodb$`Smooth muscle cells`,
+                                                          c("TPSB2","TPSAB1","KIT")),#Three gene Mast signature
+                              name = c("B.","Plasma.","Mast.","Macrophage.","DC.",
+                                       "T.","NK.","Endothelial.","Fibroblast.","Epithelial.","Smooth_muscle.","Mast_3_gene."),search = T)
+
+# Assess Mast cell enrichment to potentially rename clusters
+StackedVlnPlot(rna,features = c("B.1","Plasma.2","Mast.3","Macrophage.4",
+                                        "DC.5","T.6","NK.7","Endothelial.8","Fibroblast.9",
+                                        "Epithelial.10","Smooth_muscle.11"))
+StackedVlnPlot(rna,features = c("TPSB2","TPSAB1","KIT"))
+
+vln.df <- VlnPlot(rna,features = "Mast_3_gene.12")
+data.mast <- describeBy(vln.df$data$Mast_3_gene.12, vln.df$data$ident, mat = TRUE)
+data.mast <- dplyr::filter(data.mast,median > 0.225)
+
+# Assess B cell enrichment to potentially rename clusters
+vln.df <- VlnPlot(rna,features = "B.1")
+data.B <- describeBy(vln.df$data$B.1, vln.df$data$ident, mat = TRUE)
+data.B <- dplyr::filter(data.B,median > 0.225)
+
+# Annotate mast/b cells
+rna$mast.cell <- ifelse(rna$RNA_snn_res.0.7 %in% as.character(data.mast$group1),TRUE,FALSE)
+rna$B.cell <- ifelse(rna$RNA_snn_res.0.7 %in% as.character(data.B$group1),TRUE,FALSE)
+
+# Append SingleR annotations to cluster labels:
+# The most common SingleR label in each cluster becomes the cluster label 
+cells <- rna@meta.data %>% dplyr::group_by(RNA_snn_res.0.7) %>% dplyr::count(SingleR) # cell type annotations
+cluster.ids <- rep("fill",length(levels(Idents(rna))))
+names(cluster.ids) <- levels(Idents(rna))
+
+# Aggregate all cells pertaining to their specific clusters
+for ( i in factor(cells$RNA_snn_res.0.7)){
+  library(tidyr)
+  cells.sub <- cells %>% dplyr::filter(RNA_snn_res.0.7 ==i) %>% arrange(desc(n))
+  cluster.ids[[i]] <- cells.sub$SingleR[1]
+}
+
+# Rename cluster if median enrichment score is greater than 0.1  
+if(nrow(data.mast) > 0){
+  for (i in 1:nrow(data.mast)){
+    cluster.ids[[data.mast$group1[i]]] <- "Mast cell" # Marker Mast cell cluster 
+  }
+}else{cluster.ids <- cluster.ids} # No apparent changes
+
+

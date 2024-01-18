@@ -11,6 +11,15 @@ library(psych)
 library(celldex)
 library(SingleR)
 library(scran)
+library(patchwork)
+library(SingleCellExperiment)
+library(ComplexHeatmap)
+library(ConsensusClusterPlus)
+library(msigdbr)
+library(fgsea)
+library(tibble)
+library(DoubletFinder)
+library(Signac)
 
 #----------------------------------------------------#
 #-------------------Datasets-------------------------
@@ -1509,6 +1518,7 @@ xlsx::write.xlsx(output, "scRNA_pipeline_summary.xlsx",
 
 # SingleR predicted cell types 
 rna$SingleR <- rna$SingleR.endo
+rna$Sample <- "3533EL"
 
 # Adding module scores top Seurat object
 rna <- AddModuleScore(rna,features = list(panglaodb$`B cells`,
@@ -1535,11 +1545,13 @@ StackedVlnPlot(rna,features = c("TPSB2","TPSAB1","KIT"))
 vln.df <- VlnPlot(rna,features = "Mast_3_gene.12")
 data.mast <- describeBy(vln.df$data$Mast_3_gene.12, vln.df$data$ident, mat = TRUE)
 data.mast <- dplyr::filter(data.mast,median > 0.225)
+vln.df
 
 # Assess B cell enrichment to potentially rename clusters
 vln.df <- VlnPlot(rna,features = "B.1")
 data.B <- describeBy(vln.df$data$B.1, vln.df$data$ident, mat = TRUE)
 data.B <- dplyr::filter(data.B,median > 0.225)
+vln.df
 
 # Annotate mast/b cells
 rna$mast.cell <- ifelse(rna$RNA_snn_res.0.7 %in% as.character(data.mast$group1),TRUE,FALSE)
@@ -1551,7 +1563,10 @@ cells <- rna@meta.data %>% dplyr::group_by(RNA_snn_res.0.7) %>% dplyr::count(Sin
 cluster.ids <- rep("fill",length(levels(Idents(rna))))
 names(cluster.ids) <- levels(Idents(rna))
 
-# Aggregate all cells pertaining to their specific clusters
+#############################################################
+# Aggregate all cells pertaining to their specific clusters #
+#############################################################
+
 for ( i in factor(cells$RNA_snn_res.0.7)){
   library(tidyr)
   cells.sub <- cells %>% dplyr::filter(RNA_snn_res.0.7 ==i) %>% arrange(desc(n))
@@ -1565,4 +1580,164 @@ if(nrow(data.mast) > 0){
   }
 }else{cluster.ids <- cluster.ids} # No apparent changes
 
+# Rename cluster if median enrichment score is greater than 0.1  
+if (nrow(data.B) >0 ){
+  for (i in 1:nrow(data.B)){
+    cluster.ids[[data.B$group1[i]]] <- "B cell" # Marker B cell cluster 
+  }
+}else{cluster.ids <- cluster.ids} # No apparent changes
+
+cluster.ids <- as.data.frame(cluster.ids)                      # 14 cluster id's
+levels(Idents(rna)) <- cluster.ids$cluster.ids                 # 7 cluster id's distributed in 14 clusters
+rna$cell.type <- Idents(rna)                                   # New metadata containing cell types
+rna$cell.type <- paste0(rna$RNA_snn_res.0.7,"-",rna$cell.type) # Cell type + cluster
+Idents(rna) <- rna$cell.type                                   # Assign cell types and clusters in metadata
+
+DimPlot(rna,group.by = "cell.type",label = T, repel = T)
+
+Idents(rna) <- "cell.type"
+Wilcox.markers <- FindAllMarkers(object = rna, min.pct = 0.25,only.pos = T, test.use = "wilcox") # Find differentially expressed genes
+# saveRDS(Wilcox.markers,"1_Data/wilcox_DEGs.rds")
+# readRDS("1_Data/wilcox_DEGs.rds")
+
+############################################
+# Plotting with cell types and clusters
+############################################
+
+sampleColors <- RColorBrewer::brewer.pal(11,"Paired")
+sampleColors <- c(sampleColors[5],sampleColors[7],sampleColors[6],sampleColors[8],sampleColors[10],
+                  sampleColors[9],sampleColors[4],sampleColors[3],sampleColors[2],sampleColors[11],sampleColors[1])
+sampleColors[11] <- "#8c8b8b"
+
+rna.df <- as.data.frame(rna@reductions$umap@cell.embeddings) # Cells' coordinates at UMAP reduction
+length(which(rownames(rna.df)==rownames(rna@meta.data)))
+
+rna.sample.plot <-ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2, color = "Sample"))+
+  geom_point(size = .1)+
+  theme_classic()+
+  theme(plot.title = element_text(face = "bold"))+
+  xlab("UMAP_1")+
+  ylab("UMAP_2")+ 
+  theme(legend.key.size = unit(0.2, "cm"))+
+  scale_color_manual(values = sampleColors)+
+  guides(colour = guide_legend(override.aes = list(size=6)))
+rna.sample.plot 
+
+levels(factor(rna$RNA_snn_res.0.7))    # 14 levels 0-13
+rna.df$cluster <- rna$RNA_snn_res.0.7  # Assign cluster to each cell
+rna.df$cell.type <- rna$cell.type      # Assign cell type to each cluster
+# Manually annotate 23-cluster as smooth muscle
+rna.df$cell.type <- str_replace_all(rna.df$cell.type,"23-Stromal fibroblast","23-Smooth muscle cells")
+
+rna.df$cluster <- as.factor(rna.df$cluster)
+rna.df$cell.type <- as.factor(rna.df$cell.type)
+levels(rna.df$cluster)
+levels(rna.df$cell.type)
+
+##################################
+# Help sort the cluster numbers: #
+##################################
+
+epi <- grep("pitheli",levels(rna.df$cell.type))       # Identify clusters with Uniciliated epithelia cell type
+epi.new <- grep("-Ciliated",levels(rna.df$cell.type)) # Identify clusters with Uniliated cell type
+epi <- c(epi,epi.new)                                 # Combined
+
+fibro <- grep("ibro",levels(rna.df$cell.type))        # Identify clusters with Stromal fibroblasts cell type
+smooth <- grep("mooth",levels(rna.df$cell.type))      # Identify clusters with Smooth Muscle cells cell type
+endo <- grep("dothel",levels(rna.df$cell.type))       # Identify clusters with Endothelia cell type
+t.nk <- grep("T cell",levels(rna.df$cell.type))       # Identify clusters with t cells and nk cells cell types, but there are none
+t.nk.new <- grep("Lym",levels(rna.df$cell.type))      # Identify clusters with Lymphocytes cell type
+t.nk <- c(t.nk,t.nk.new)
+
+mac <- grep("acrophage",levels(rna.df$cell.type))     # Identify clusters with Macrophages cell type
+mast <- grep("Mast",levels(rna.df$cell.type))         # Identify clusters with SMast cells cell types
+b <- grep("B cell",levels(rna.df$cell.type))          # Identify clusters with B cells cell type
+cell.types.idx <- c(epi,fibro,smooth,endo,t.nk,mac,mast,b)
+store <- numeric(0)
+
+for(i in 1:length(cell.types.idx)){
+  name <- levels(rna.df$cell.type)[cell.types.idx[i]]
+  print(gsub("-.*","",name))
+  new.name <- gsub("-.*","",name)
+  new.num <- as.numeric(new.name)
+  store[i] <- new.num
+}
+print(store)
+
+#####################################################
+
+my_levels <- c(11,20,21,22,31,
+               19,34,
+               3,
+               9,10,
+               16,17,
+               0,27,
+               6,8,12,14,15,18,24,25,26,29,
+               7,23,
+               1,33,
+               2,4,30,
+               5,13,
+               32,
+               28,35)
+
+# Relevel object@ident
+rna.df$cluster.new <- factor(x = rna.df$cluster, levels = my_levels)
+
+epithelial.cols <- colorRampPalette(c("#A0E989", "#245719")) # Set colors for epithelial cells
+epithelial.cols <- epithelial.cols(14)
+fibro.cols <-colorRampPalette(c("#FABFD2", "#B1339E"))       # Set color for fibroblasts
+fibro.cols <- fibro.cols(10)
+smooth.cols <- c("#b47fe5","#d8b7e8")                        # Set colors for smooth muscle cells
+endo.cols <- c("#93CEFF","#4A99FF")                          # Set colors for endothelial cells
+t.cols <- c("gray60","gray20","gray40")                      # Set colors for T-cells
+macro.cols <- c("#ff6600","#ff9d5c")                         # Set colors for macrophages
+mast.cols <- "gold3"                                         # Set color for mast cells
+b.cols <- c("#B22222","#CD5C5C")                             # Set colors for B-cells
+
+cols <- c(epithelial.cols,fibro.cols,smooth.cols,endo.cols,t.cols,macro.cols,mast.cols,b.cols) # Concatenate color tags
+
+p1 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cluster.new))+
+  geom_point(size = .1)+
+  theme_classic()+
+  theme(plot.title = element_text(face = "bold"))+
+  xlab("UMAP_1")+
+  ylab("UMAP_2")+ 
+  theme(legend.key.size = unit(0.2, "cm"))+
+  guides(colour = guide_legend(override.aes = list(size=6)))
+LabelClusters(p1,id="cluster.new",color="black",repel = T,size=8)
+
+p2 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cluster.new))+
+  geom_point(size = .1)+
+  theme_classic()+
+  theme(plot.title = element_text(face = "bold"))+
+  xlab("UMAP_1")+
+  ylab("UMAP_2")+ 
+  theme(legend.key.size = unit(0.2, "cm"))+
+  guides(colour = guide_legend(override.aes = list(size=6)))+NoLegend()
+LabelClusters(p2,id="cell.type",color="black",repel = T,size=4)
+
+meta <- rna@meta.data
+df <- meta %>% group_by(RNA_snn_res.0.7) %>% count(Sample)
+colnames(df) <- c("Cluster","Sample","Cells")
+
+levels(factor(rna$cell.type))
+df %>% 
+  dplyr::mutate(cell.type = factor(Cluster,levels = c(11,20,21,22,31,
+                                                      19,34,
+                                                      3,
+                                                      9,10,
+                                                      16,17,
+                                                      0,27,
+                                                      6,8,12,14,15,18,24,25,26,29,
+                                                      7,23,
+                                                      1,33,
+                                                      2,4,30,
+                                                      5,13,
+                                                      32,
+                                                      28,35))) %>% 
+  ggplot(aes(fill=Sample, y=Cells, x= fct_rev(cell.type))) + geom_bar(stat="identity")+
+  coord_flip()+theme_classic()+xlab("Clusters")+ylab("# of cells")+scale_fill_manual(values = sampleColors)
+
+total.rna <- as.data.frame(table(rna$cell.type))
+colnames(total.rna) <- c("Cluster","RNA cells")
 

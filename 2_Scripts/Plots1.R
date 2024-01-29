@@ -131,7 +131,3 @@ df %>%
 total.rna <- as.data.frame(table(rna$cell.type))
 colnames(total.rna) <- c("Cluster","RNA cells")
 
-
-for(i in my_levels){
-  print(sum(factor(x = rna.df$cluster, levels = my_levels) == i))
-}

@@ -1610,4 +1610,6 @@ DimPlot(rna, label = T, repel = T,group.by = "cell.type")
 
 Idents(rna) <- "cell.type"
 Wilcox.markers <- FindAllMarkers(object = rna, min.pct = 0.25,only.pos = T, test.use = "wilcox") # Find differentially expressed genes
+
+# save(rna, file = "4_Intermediate/rna.RData")
 # save(Wilcox.markers, file = "4_Intermediate/wilcox_markers.RData")

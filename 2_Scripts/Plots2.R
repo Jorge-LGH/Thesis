@@ -148,8 +148,8 @@ p.CD117 <- FeaturePlot(rna,features = "KIT")
 
 CombinePlots(list(p.CA125,p.HE4,p.CD117),ncol=1)
 
-malignant <- c(1,2,3,4,6)
-remaining <- c(5,7,8,9,10,11,12,13)
+malignant <- c(0,1,2,3,4,6,8,13)
+remaining <- c(5,7,9,10,11,12)
 
 # find markers avg logFC >= 0.5 and adj pval <=0.01
 for ( i in malignant){
@@ -171,7 +171,7 @@ for ( i in malignant){
 }
 
 
-for(i in 1:nrow(cluster.ids)){
+for(i in 0:(nrow(cluster.ids)-1)){
   mark <- FindMarkers(rna,ident.1=i,
               ident.2=remaining,
               features=c("MUC16",
@@ -181,4 +181,37 @@ for(i in 1:nrow(cluster.ids)){
               logfc.threshold = 0.5)
   print(paste0("cluster",i))
   print(mark)
+  print("####################")
 }
+
+rna$cancer <- " "
+
+for(i in 1:length(rna$seurat_clusters)){
+  if(sum(rna$seurat_clusters[i] == malignant) != 0){
+    rna$cancer[i] <- paste0("Endometrial cancer")
+  }else{
+    rna$cancer[i] <- rna$cell.type[i]
+  }
+}
+
+rna.df$cancer <- rna$cancer
+
+p6 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cancer))+
+  geom_point(size = .1)+
+  theme_classic()+
+  theme(plot.title = element_text(face = "bold"))+
+  xlab("UMAP_1")+
+  ylab("UMAP_2")+ 
+  theme(legend.key.size = unit(0.2, "cm"))+
+  guides(colour = guide_legend(override.aes = list(size=6)))+NoLegend()+ 
+  annotate(geom="text", x=3, y=-3.5, label="Cáncer endometrial",color="magenta", size = 6)+
+  annotate(geom="text", x=6, y=16, label="Linfocitos",color="red", size = 6)+
+  annotate(geom="text", x=-13, y=-3.5, label="Endotelio",color="green", size = 6)+
+  annotate(geom="text", x=1, y=-13, label="Fibroblastos",color="deepskyblue3", size = 6)+
+  annotate(geom="text", x=1, y=-14, label="estromales",color="deepskyblue3", size = 6)+
+  annotate(geom="text", x=-8, y=15, label="Macrófagos",color="brown", size = 6)+
+  annotate(geom="text", x=-12, y=-12, label="Células de",color="blue", size = 6)+
+  annotate(geom="text", x=-12, y=-13.5, label="músculo liso",color="blue", size = 6)
+  
+LabelClusters(p6, id="cluster.new",color="black",repel = T,size=8)
+

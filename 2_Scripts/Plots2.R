@@ -146,7 +146,7 @@ p.CA125 <- FeaturePlot(rna,features = "MUC16")
 p.HE4 <- FeaturePlot(rna,features = "WFDC2")
 p.CD117 <- FeaturePlot(rna,features = "KIT")
 
-CombinePlots(list(p.CA125,p.HE4,p.CD117),ncol=1)
+CombinePlots(list(p.CA125,p.HE4,p.CD117),ncol=2)
 
 malignant <- c(0,1,2,3,4,6,8,13)
 remaining <- c(5,7,9,10,11,12)

@@ -1,24 +1,10 @@
 #--------------------Libraries---------------------
 # Load necessary libraries for analysis
-library(scater)
-library(dplyr)
-library(Matrix)
-library(Seurat)
-library(ggplot2)
-library(tidyverse)
-library(infercnv)
-library(stringr)
-library(psych)
-library(celldex)
-library(SingleR)
-library(scran)
-library(patchwork)
-library(SingleCellExperiment)
-library(msigdbr)
-library(fgsea)
-library(tibble)
-library(DoubletFinder)
-library(Signac)
+library(scater) 
+library(dplyr) 
+library(Seurat) 
+library(ggplot2) 
+library(tidyverse) 
 
 #--------------------Datasets--------------------
 # Load necessaary data for analysis
@@ -292,6 +278,8 @@ rna <- RunUMAP(rna, dims = 1:50)
 
 # Change rna identifiers
 Idents(rna) <- "RNA_snn_res.0.7" 
+
+# Save object
 saveRDS(rna,"1_Data/Created_data/rna_predoublet_SkipChecks.rds")
 
 

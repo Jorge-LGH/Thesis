@@ -507,7 +507,10 @@ for (i in levels(Idents(rna))){
 #Improved_Seurat_Pre_Process()
 #Idents(rna) <- as.factor(Idents(rna))
 seuratObject <- rna
-newFiles <- Improved_Seurat_Pre_Process(seuratObject, num_genes=50, write_files=F)
+newFiles <- Improved_Seurat_Pre_Process(seuratObject, num_genes=50, write_files=F) # This function is used for the calculation of blacklisted medoids 
+# and groups. It calculates medoids. It performs medoid correlations. It creates the binary correlation table between medoids, 
+# otherwise known as the blacklist. It makes a blacklist heatmap. It makes a blacklist heatmap. It makes new medoids based on blacklisted
+# combined clusters. It makes a new groups file based on the blacklisted combined clusters.
 
 # make newFiles$newGroupsFile into dataframe, otherwise it will not work
 newFiles$newGroupsFile <- as.data.frame.array(newFiles$newGroupsFile)
@@ -627,7 +630,7 @@ rna <- JackStraw(rna, num.replicate = 100,dims = 50)
 rna <- ScoreJackStraw(rna,dims = 1:50)
 JackStrawPlot(rna, dims = 1:50)
 
-# If PC1 is correalted with read depth, check to see if biological variation is corralted to PC1
+# If PC1 is correalted with read depth, check to see if biological variation is correlated to PC1
 if (round(abs(count_cor_PC1),2) > 0.5){
   
   if( round(abs(stromal.cor),2) >= 0.5 |
@@ -1511,6 +1514,8 @@ Wilcox.markers <- FindAllMarkers(object =rna, min.pct = 0.25,only.pos = F,
                                  test.use = "wilcox")
 saveRDS(Wilcox.markers,"1_Data/wilcox_DEGs.rds")
 
+ggplot(Wilcox.markers, aes(x= cluster, y=count(gene)))+ # maybe do a boxplot or a volcano plot for expressed genes
+  geom_histogram()
 
 ###########################################################
 # Part 4: SingleR cell typing 
@@ -1522,14 +1527,14 @@ rna.sce <- as.SingleCellExperiment(rna)
 
 # Set reference paths:
 # Wang et al. GSE111976
-ref.data.counts <- readRDS("1_Data/GSE111976_ct_endo_10x.rds")
-meta <- read.csv("1_Data/GSE111976_summary_10x_day_donor_ctype.csv")
+ref.data.counts <- readRDS("1_Data/GSE111976_ct_endo_10x.rds")        # Load matrix object 33,538 cells by 71,032 genes
+meta <- read.csv("1_Data/GSE111976_summary_10x_day_donor_ctype.csv")  # Meta data for seurat object
 rownames(meta) <- meta$X
 
 length(which(rownames(meta) == colnames(ref.data.counts)))
-ref.data.endo <- CreateSeuratObject(ref.data.counts,meta.data = meta)
-Idents(ref.data.endo) <- "cell_type"
-ref.data.endo <- NormalizeData(ref.data.endo)
+ref.data.endo <- CreateSeuratObject(ref.data.counts,meta.data = meta) # Create seurat object
+Idents(ref.data.endo) <- "cell_type"                                  # Assign cell types
+ref.data.endo <- NormalizeData(ref.data.endo)                         # Log normalization
 
 # SingleR annotation
 #####################################################
@@ -1689,3 +1694,5 @@ Wilcox.markers <- FindAllMarkers(object = rna, min.pct = 0.25,only.pos = T, test
 
 # save(rna, file = "4_Intermediate/rna.RData")
 # save(Wilcox.markers, file = "4_Intermediate/wilcox_markers.RData")
+
+cc <- as.vector(rownames(rna[rna@assays$RNA@meta.features$vst.variable == T]@assays$RNA@meta.features))

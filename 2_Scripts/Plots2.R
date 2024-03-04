@@ -215,3 +215,6 @@ p6 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cancer))+
   
 LabelClusters(p6, id="cluster.new",color="black",repel = T,size=8)
 
+pfile <- Convert(from = rna, to = "loom", filename = "endo_3.loom", 
+                 display.progress = FALSE)
+pfile

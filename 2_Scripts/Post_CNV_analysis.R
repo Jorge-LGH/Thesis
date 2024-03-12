@@ -259,3 +259,6 @@ p6 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cancer))+
   annotate(geom="text", x=6, y=-10, label="músculo liso",color="blue", size = 6)
 
 final_umap <- LabelClusters(p6, id="cluster.new",color="black",repel = T,size=8)
+final_umap
+
+saveRDS(rna, "1_Data/Created_data/pre_network_rna.rds")

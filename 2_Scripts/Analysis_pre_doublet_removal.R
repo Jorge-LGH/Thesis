@@ -123,7 +123,7 @@ ribo_percent_distri <- qc.metrics %>% ggplot(aes(percent.Ribosomal)) +
 mito_ribo_pre_distri <- mito_percent_distri + ribo_percent_distri
 
 # Gene expression distribution pre-normalization and quality thresholding
-pre_normalizatrion_expression <- as_tibble(rna@assays$RNA@data[,1:50]) %>% 
+pre_normalization_expression <- as_tibble(rna@assays$RNA@data[,1:50]) %>% 
   pivot_longer(cols=everything(), names_to="cell", values_to="expression") %>%
   ggplot(aes(x=cell, y=expression)) + xlab("Cell ID") + ylab("Gene expression") +
   stat_summary(geom="crossbar", fun.data=mean_sdl) + 
@@ -192,7 +192,7 @@ mito_ribo_pre_distri <- mito_percent_distri + ribo_percent_distri
 rna <- NormalizeData(rna, normalization.method = "LogNormalize", scale.factor = 10000)
 
 # Gene expression distribution post-normalization and quality thresholding
-post_normalizatrion_expression <- as_tibble(rna@assays$RNA@data[,1:50]) %>% 
+post_normalization_expression <- as_tibble(rna@assays$RNA@data[,1:50]) %>% 
   pivot_longer(cols=everything(), names_to="cell", values_to="expression") %>%
   ggplot(aes(x=cell, y=expression)) + xlab("Cell ID") + ylab("Gene expression") +
   stat_summary(geom="crossbar", fun.data=mean_sdl) + 

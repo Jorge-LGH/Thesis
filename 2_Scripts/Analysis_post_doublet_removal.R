@@ -175,12 +175,7 @@ ggsave(filename = "Postdoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = 
 
 saveRDS(rna,"1_Data/Created_data/rna_postdoublet_SkipChecks.rds")
 
-<<<<<<< HEAD
-#--------------------Post-InferCN cell type annotation--------------------
-
-=======
-#--------------------Post-InferCN analysis--------------------
->>>>>>> 0303a3dc43490856db6df8faa7243731efa8307b
+#--------------------Post-InferCNV cell type annotation--------------------
 Idents(rna)<- "RNA_snn_res.0.7"
 
 # DEG analysis with Wilcox

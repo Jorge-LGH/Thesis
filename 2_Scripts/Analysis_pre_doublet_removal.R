@@ -282,9 +282,3 @@ Idents(rna) <- "RNA_snn_res.0.7"
 # Save object
 saveRDS(rna,"1_Data/Created_data/rna_predoublet_SkipChecks.rds")
 
-
-
-
-
-
-

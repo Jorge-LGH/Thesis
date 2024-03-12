@@ -111,23 +111,17 @@ p2 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cluster.new))+
 LabelClusters(p2,id="cell.type",color="black",repel = T,size=4)
 
 meta <- rna@meta.data
-df <- meta %>% group_by(RNA_snn_res.0.7) %>% count(Sample)
+df <- meta %>% group_by(RNA_snn_res.0.7) %>% dplyr::count(Sample)
 colnames(df) <- c("Cluster","Sample","Cells")
 
 levels(factor(rna$cell.type))
 df %>% 
-  dplyr::mutate(cell.type = factor(Cluster,levels = c(11,
-                                                      3,
-                                                      9,10,
-                                                      0,
-                                                      6,8,12,
-                                                      7,
-                                                      1,
-                                                      2,4,
-                                                      5,13))) %>% 
-  ggplot(aes(fill=Sample, y=Cells, x= fct_rev(cell.type))) + geom_bar(stat="identity")+
-  coord_flip()+theme_classic()+xlab("Clusters")+ylab("# of cells")+scale_fill_manual(values = sampleColors)
+  dplyr::mutate(cell.type = factor(Cluster,levels = c(11,3,9,10,0,6,8,12,7,1,2,4,5,13))) %>% 
+  ggplot(aes(fill=Cluster, y=Cells, x= fct_rev(cell.type))) + geom_bar(stat="identity")+
+  coord_flip()+theme_classic()+xlab("Clusters")+ylab("Cells per cluster")
 
 total.rna <- as.data.frame(table(rna$cell.type))
 colnames(total.rna) <- c("Cluster","RNA cells")
 
+ggplot(total.rna, aes(x=reorder(total.rna$Cluster), y=total.rna$"RNA cells", fill = total.rna$Cluster)) + 
+  geom_bar(stat = "identity") + coord_flip() + NoLegend() + ylab("Cells per cluster") + xlab("Clusters")

@@ -176,7 +176,7 @@ ggsave(filename = "Postdoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = 
 saveRDS(rna,"1_Data/Created_data/rna_postdoublet_SkipChecks.rds")
 Idents(rna)<- "RNA_snn_res.0.7"
 
-#--------------------Post-InferCN analysis--------------------
+#--------------------Post-InferCN cell type annotation--------------------
 
 Idents(rna)<- "RNA_snn_res.0.7"
 

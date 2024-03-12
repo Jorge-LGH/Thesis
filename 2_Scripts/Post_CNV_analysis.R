@@ -8,7 +8,7 @@ library(psych)
 library(SingleR)
 
 #--------------------Load previously created seurat object---------------------
-readRDS("1_Data/Created_data/rna_postdoublet_SkipChecks.rds")
+rna <- readRDS("1_Data/Created_data/endo_36186L_scRNA_processed.rds")
 
 #--------------------Further cell type annotation---------------------
 # SingleR predicted cell types 
@@ -102,6 +102,7 @@ Wilcox.markers <- FindAllMarkers(object = rna, min.pct = 0.25,only.pos = T, test
 
 saveRDS(rna, "1_Data/Created_data/rna_postinfercnv.rds")
 save(Wilcox.markers, file = "1_Data/Created_data/wilcox_markers.RData")
+<<<<<<< HEAD
 
 #--------------------UMAP plots and reads per cluster plot-------------------
 # Establish levels for existing clusters, only from 0-13
@@ -259,3 +260,5 @@ p6 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cancer))+
   annotate(geom="text", x=6, y=-10, label="músculo liso",color="blue", size = 6)
 
 final_umap <- LabelClusters(p6, id="cluster.new",color="black",repel = T,size=8)
+=======
+>>>>>>> 0303a3dc43490856db6df8faa7243731efa8307b

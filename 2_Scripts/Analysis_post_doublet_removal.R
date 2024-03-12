@@ -174,16 +174,13 @@ boxplot.cnv
 ggsave(filename = "Postdoublet_CNV_PC1_boxplot.png", plot = last_plot(), path = "3_Figures/")
 
 saveRDS(rna,"1_Data/Created_data/rna_postdoublet_SkipChecks.rds")
-Idents(rna)<- "RNA_snn_res.0.7"
 
 #--------------------Post-InferCN analysis--------------------
-
 Idents(rna)<- "RNA_snn_res.0.7"
 
 # DEG analysis with Wilcox
 # DEG analysis with Wilcoxon
-Wilcox.markers <- FindAllMarkers(object =rna, min.pct = 0.25,only.pos = F,
-                                 test.use = "wilcox")
+Wilcox.markers <- FindAllMarkers(object =rna, min.pct = 0.25,only.pos = F, test.use = "wilcox")
 
 # Part 4: SingleR cell typing 
 # SingleR labeling of celltypes

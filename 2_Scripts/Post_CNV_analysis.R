@@ -8,7 +8,7 @@ library(psych)
 library(SingleR)
 
 #--------------------Load previously created seurat object---------------------
-readRDS("1_Data/Created_data/rna_postdoublet_SkipChecks.rds")
+rna <- readRDS("1_Data/Created_data/endo_36186L_scRNA_processed.rds")
 
 #--------------------Further cell type annotation---------------------
 # SingleR predicted cell types 

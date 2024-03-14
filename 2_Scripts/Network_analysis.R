@@ -61,7 +61,10 @@ rownames(clusters_total_counts) <- rownames(rna)
 f <- 1
 cell_type <- c()
 for(i in cl_list){
-  cell_type[f] <- levels(factor(i$cell.type))
+  fast <- levels(factor(i$cell.type))
+  fast <- strsplit(fast, "-")[[1]][2]
+  fast <- gsub(" ", "_", fast)
+  cell_type[f] <- fast
   f <- f + 1
 }
 
@@ -180,11 +183,12 @@ cor <- temp_cor                                  # Return original correlation f
 
 #----------Module Eigengenes----------
 module_eigengenes <- bwnet$MEs # Dataframe with modules' eigen genes (a summary of the gene expression patterns within a module)
+                               # Representing genes that explain most variance in performed PCA
 
 # Print out a preview
-head(module_eigengenes)
+head(module_eigengenes) # Each sample, the module's eigen genes have been calculated
 
-# get number of genes for each module
+# Get number of genes for each module (color)
 table(bwnet$colors)
 
 # Plot the dendrogram and the module colors before and after merging underneath
@@ -192,9 +196,115 @@ plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$co
                     c("unmerged", "merged"),
                     dendroLabels = FALSE,
                     addGuide = TRUE,
-                    hang= 0.03,
+                    hang = 0.03,
                     guideHang = 0.05)
 
 # grey module = all genes that doesn't fall into other modules were assigned to the grey module
 
+#----------Relate modules to specific traits----------
+# My traits will be cell type and if said cell types are cancerous
+traits <- colData[,2]
 
+colData$cell_type <- factor(colData$cell_type, levels = c("Ciliated", "Endothelia", "Lymphocytes", "Macrophages", 
+                                                          "Smooth_muscle_cells", "Stromal_fibroblasts", "Unciliated_epithelia_1"))
+
+ce_type_out <- binarizeCategoricalColumns(as.data.frame(colData$cell_type),
+                                          includePairwise = F,
+                                          includeLevelVsAll = T,
+                                          minCount = 1)
+
+ce_type_out
+
+
+
+
+# 6A. Relate modules to traits --------------------------------------------------
+# module trait associations
+
+
+
+# create traits file - binarize categorical variables
+traits <- colData %>% 
+  mutate(disease_state_bin = ifelse(grepl('COVID', disease_state), 1, 0)) %>% 
+  select(8)
+
+
+# binarize categorical variables
+
+colData$severity <- factor(colData$severity, levels = c("Healthy", "Convalescent", "ICU", "Moderate", "Severe"))
+
+severity.out <- binarizeCategoricalColumns(colData$severity,
+                                           includePairwise = FALSE,
+                                           includeLevelVsAll = TRUE,
+                                           minCount = 1)
+
+
+traits <- cbind(traits, severity.out)
+
+
+# Define numbers of genes and samples
+nSamples <- nrow(norm.counts)
+nGenes <- ncol(norm.counts)
+
+
+module.trait.corr <- cor(module_eigengenes, traits, use = 'p')
+module.trait.corr.pvals <- corPvalueStudent(module.trait.corr, nSamples)
+
+
+
+# visualize module-trait association as a heatmap
+
+heatmap.data <- merge(module_eigengenes, traits, by = 'row.names')
+
+head(heatmap.data)
+
+heatmap.data <- heatmap.data %>% 
+  column_to_rownames(var = 'Row.names')
+
+
+
+
+CorLevelPlot(heatmap.data,
+             x = names(heatmap.data)[18:22],
+             y = names(heatmap.data)[1:17],
+             col = c("blue1", "skyblue", "white", "pink", "red"))
+
+
+
+module.gene.mapping <- as.data.frame(bwnet$colors)
+module.gene.mapping %>% 
+  filter(`bwnet$colors` == 'turquoise') %>% 
+  rownames()
+
+
+
+# 6B. Intramodular analysis: Identifying driver genes ---------------
+
+
+
+# Calculate the module membership and the associated p-values
+
+# The module membership/intramodular connectivity is calculated as the correlation of the eigengene and the gene expression profile. 
+# This quantifies the similarity of all genes on the array to every module.
+
+module.membership.measure <- cor(module_eigengenes, norm.counts, use = 'p')
+module.membership.measure.pvals <- corPvalueStudent(module.membership.measure, nSamples)
+
+
+module.membership.measure.pvals[1:10,1:10]
+
+
+# Calculate the gene significance and associated p-values
+
+gene.signf.corr <- cor(norm.counts, traits$data.Severe.vs.all, use = 'p')
+gene.signf.corr.pvals <- corPvalueStudent(gene.signf.corr, nSamples)
+
+
+gene.signf.corr.pvals %>% 
+  as.data.frame() %>% 
+  arrange(V1) %>% 
+  head(25)
+
+
+# Using the gene significance you can identify genes that have a high significance for trait of interest 
+# Using the module membership measures you can identify genes with high module membership in interesting modules.

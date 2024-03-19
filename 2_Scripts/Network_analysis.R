@@ -7,6 +7,7 @@ library(tidyverse)
 library(DESeq2)
 library(gridExtra)
 library(CorLevelPlot)
+library(igraph)
 
 #--------------------Load data--------------------
 rna <- readRDS("1_Data/Created_data/pre_network_rna.rds")
@@ -188,7 +189,7 @@ module_eigengenes <- bwnet$MEs # Dataframe with modules' eigen genes (a summary 
                                # Representing genes that explain most variance in performed PCA
 
 # Print out a preview
-head(module_eigengenes) # Each sample, the module's eigen genes have been calculated
+head(module_eigengenes)        # Each sample, the module's eigen genes have been calculated
 
 # Get number of genes for each module (color)
 table(bwnet$colors)
@@ -205,148 +206,86 @@ plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$co
 
 #----------Relate modules to specific traits----------
 # My traits will be cell type and if said cell types are cancerous
-traits <- as.numeric(colData[,2])
+traits <- as.numeric(colData[,2]) # Binarize cancer state or not for each cell cluster/cell type
 
+# Take as factor each possible cell type level
 colData$cell_type <- factor(colData$cell_type, levels = c("Ciliated", "Endothelia", "Lymphocytes", "Macrophages", 
                                                           "Smooth_muscle_cells", "Stromal_fibroblasts", "Unciliated_epithelia_1"))
 
+# Binarization for each cell type
 ce_type_out <- binarizeCategoricalColumns(as.data.frame(colData$cell_type),
                                           includePairwise = F,
                                           includeLevelVsAll = T,
                                           minCount = 1)
+
 # Apparently, the first cell type is not being detected, so it will be manually added
 ce_type_out$`colData$cell_type.Ciliated.vs.all` <- c(1,0,0,0,0,0,1,0,0,0,0,0,0)
-ce_type_out <- ce_type_out[,c(7,1,2,3,4,5,6)] # Reorder columns
+ce_type_out <- ce_type_out[,c(7,1,2,3,4,5,6)]      # Reorder columns
 
 # Combine binarized traits
-traits <- cbind(traits, ce_type_out)
-rownames(traits) <- rownames(module_eigengenes)
+traits <- cbind(traits, ce_type_out)             # Combine by column the cancer trait and the cell type
+rownames(traits) <- rownames(module_eigengenes)  # Assign row names
 
 # Define numbers of genes and samples
-nSamples <- nrow(norm.counts)
-nGenes <- ncol(norm.counts)
+nSamples <- nrow(norm.counts)                    # 13 clusters remaining
+nGenes <- ncol(norm.counts)                      # 5,535 genes reamining
 
-module.trait.corr <- cor(module_eigengenes, traits, use = 'p')
-module.trait.corr.pvals <- corPvalueStudent(module.trait.corr, nSamples)
+module.trait.corr <- cor(module_eigengenes, traits, use = 'p')           # Correlation between the module eigen genes and the selected traits, in this case,
+                                                                         # the traits are the cell types as well as cancerous or not
+module.trait.corr.pvals <- corPvalueStudent(module.trait.corr, nSamples) # Determine statistical significance of the modules' influence on determining if the
+                                                                         # clusters can explain the cell type and if they are cancerous or not
 
-# visualize module-trait association as a heatmap
+# Change the column names for easier plot understanding
+colnames(traits) <- c("Cancerous", "Ciliated", "Endothelia", "Lymphocytes", "Macrophages",
+                      "Smooth_muscle", "Stromal_fiborblasts", "Unciliated")
+
+# Visualize module-trait association as a heatmap
 heatmap.data <- merge(module_eigengenes, traits, by = 'row.names')
 head(heatmap.data)
 
 heatmap.data <- heatmap.data %>% 
   column_to_rownames(var = 'Row.names')
 
+# Significant correlations will be the ones with "*"
 CorLevelPlot(heatmap.data,
              x = names(heatmap.data)[18:25],
              y = names(heatmap.data)[1:17],
              col = c("blue1", "skyblue", "white", "pink", "red"))
 
-CorLevelPlot(heatmap.data, x=names(heatmap.data[1:17]), y = names(heatmap.data[18]))
+# Selected modules are: turquoise for cancerous cells, and lightcyan for ciliated cell type
+module.gene.mapping <- as.data.frame(bwnet$colors)                                               # Extract which genes correspond to which module
+turq_genes <- module.gene.mapping %>% filter(`bwnet$colors` == 'turquoise') %>% rownames()       # Genes associated to turquoise module
+lightcyan_genes <- module.gene.mapping %>% filter(`bwnet$colors` == 'lightcyan') %>% rownames()  # Genes associated to light cyan module
 
-module.gene.mapping <- as.data.frame(bwnet$colors)
-module.gene.mapping %>% 
-  filter(`bwnet$colors` == 'turquoise') %>% 
-  rownames()
+#----------Edge list creation for network----------
+module_edge_df <- data.frame(gene_id = names(bwnet$colors), colors = bwnet$colors)   # Dataframe with modules' genes and colors
+rownames(module_edge_df) <- c()                                                      # Remove row names
 
-#----------Identifying driver genes for selected modules----------
-# Calculate the module membership and the associated p-values
+modules_of_interest <- c("lightcyan", "turquoise")                                   # Set modules of interest
 
-# The module membership/intramodular connectivity is calculated as the correlation of the 
-# eigengene and the gene expression profile. This quantifies the similarity of all genes on the array to every module.
+#### CYAN
+module_genes_cyan <- module_edge_df %>% subset(colors %in% modules_of_interest[1])   # Subset only genes associated with modules of interest
+gene_expr_cyan <- norm.counts[,module_genes_cyan$gene_id]                            # Normalized expression matrix only for modules' of interest genes
+gene_expr_cyan <- t(gene_expr_cyan)                                                  # Matrix transpose
 
-module_member_measure_cyan <- cor(module_eigengenes$MElightcyan, norm.counts, use = 'p')
-module_member_measure_pvals_cyan <- corPvalueStudent(module_member_measure_cyan, nSamples)
+TOM_cyan <- TOMsimilarityFromExpr(t(gene_expr_cyan), power = soft_power)             # Calculate topological overlap matrix from matrix
+row.names(TOM_cyan) <- row.names(gene_expr_cyan)                                     # Assign genes' id as row names
+colnames(TOM_cyan) = row.names(gene_expr_cyan)                                       # Assign genes' id as column names
+diag(TOM_cyan) <- 0                                                                  # Make all diagonal values turn to 0
 
-module_member_measure_magenta <- cor(module_eigengenes$MEmagenta, norm.counts, use = 'p')
-module_member_measure_pvals_magenta <- corPvalueStudent(module_member_measure_magenta, nSamples)
+#### TURQUOISE
+module_genes_turq <- module_edge_df %>% subset(colors %in% modules_of_interest[2])   # Subset only genes associated with modules of interest
+gene_expr_turq <- norm.counts[,module_genes_turq$gene_id]                            # Normalized expression matrix only for modules' of interest genes
+gene_expr_turq <- t(gene_expr_turq)                                                  # Matrix transpose
 
-module_member_measure_pvals_cyan[1:25]
-module_member_measure_pvals_magenta[1:25]
+TOM_turq <- TOMsimilarityFromExpr(t(gene_expr_turq), power = soft_power)             # Calculate topological overlap matrix from matrix
+row.names(TOM_turq) <- row.names(gene_expr_turq)                                     # Assign genes' id as row names
+colnames(TOM_turq) = row.names(gene_expr_turq)                                       # Assign genes' id as column names
+diag(TOM_turq) <- 0                                                                  # Make all diagonal values turn to 0
 
-# Calculate the gene significance and associated p-values
-gene.signf.corr <- cor(norm.counts, traits$traits, use = 'p')
-gene.signf.corr.pvals <- corPvalueStudent(gene.signf.corr, nSamples)
+#---------Network Visualization and analysis----------
+cyan_net <- graph_from_adjacency_matrix(TOM_cyan, mode = "undirected", weighted = T, diag = F)
+turq_net <- graph_from_adjacency_matrix(TOM_turq, mode = "undirected", weighted = T, diag = F)
 
-gene.signf.corr.pvals %>% 
-  as.data.frame() %>% 
-  arrange(V1) %>% 
-  head(25)
-
-# Using the gene significance you can identify genes that have a high significance for trait of interest 
-# Using the module membership measures you can identify genes with high module membership in interesting modules.
-
-
-module_df <- data.frame(gene_id = names(bwnet$colors), colors = labels2colors(bwnet$colors))
-mergedColors <- labels2colors(bwnet$colors)
-modules_of_interest <- c("lightcyan", "magenta")
-
-
-genes_of_interest = module_df %>%
-  subset(colors %in% modules_of_interest)
-
-expr_of_interest <- norm.counts[,genes_of_interest$gene_id]
-expr_of_interest <- t(expr_of_interest)
-
-TOM <- TOMsimilarityFromExpr(t(expr_of_interest),power = soft_power)
-row.names(TOM) = row.names(expr_of_interest)
-colnames(TOM) = row.names(expr_of_interest)
-
-edge_list <- data.frame(TOM) %>%
-  mutate(gene1 = row.names(.)) %>%
-  pivot_longer(-gene1) %>%
-  dplyr::rename(gene2 = name, correlation = value) %>%
-  unique() %>%
-  subset(!(gene1==gene2))
-
-colors_vec <- c()
-for(i in 1:nrow(edge_list)){
-  colors_vec[i] <- module_df[module_df == edge_list[i,]$gene1,]$colors
-}
-edge_list$module1 <- colors_vec
-
-mm <- c()
-for(i in 899:nrow(edge_list)){
-  ll <- module_df[module_df == edge_list[i,]$gene1,]$colors
-  if(is.na(ll)){
-    mm[i] <- "Unknown" 
-  }else{
-    mm[i] <- ll
-  }
-}
-
-edge_list$module2 <- mm
-
-names_vec <-c()
-f <- 1
-for(i in 1:nrow(edge_list)){
-  if(is.na(edge_list[i,5])){
-    names_vec[f] <- edge_list[i,2]
-    f <- f + 1
-  }
-}
-
-cols_vec <- c()
-f <- 1
-for(i in names_vec){
-  if(identical(module_df[module_df == i,]$colors, character(0)) == T){
-    cols_vec[f] <- "Unknown"
-  }else{
-    cols_vec[f] <- module_df[module_df == i,]$colors
-  }
-  f <- f + 1 
-}
-
-edge_list[,5][1:898,] <- cols_vec
-
-# Manually assign last few module 2 targets
-edge_list[edge_list[,4] == "Unknown",]                     # All pertain to the "lightcyan" module
-edge_list[edge_list[,4] == "Unknown",][,4] <- "lightcyan"
-
-
-head(edge_list)
-
-#---------
-library(igraph)
-
-try1 <- graph_from_edgelist(as.matrix(edge_list[,c(1,2)]))
-
+plot.igraph(cyan_net, vertex.size = 12, edge.width=E(cyan_net)$size)
+plot.igraph(turq_net, vertex.size = 12, edge.width=E(cyan_net)$size)

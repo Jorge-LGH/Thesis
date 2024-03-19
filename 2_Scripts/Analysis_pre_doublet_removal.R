@@ -260,7 +260,7 @@ plasma.cor      <- cor(rna$PC1, rna$plasma.7, method = "spearman")      # 0.0297
 
 # Jackstraw: Identification of statistically significant genomic variables associated
 # with subset or linear combination of PCs
-rna <- JackStraw(rna, num.replicate = 100, dims = 50) # 100 rnadom subset sampling and 50 PCs
+rna <- JackStraw(rna, num.replicate = 100, dims = 50) # 100 random subset sampling and 50 PCs
 rna <- ScoreJackStraw(rna, dims = 1:50)
 pre_doublet_jackstraw <- JackStrawPlot(rna, dims = 1:50)
 

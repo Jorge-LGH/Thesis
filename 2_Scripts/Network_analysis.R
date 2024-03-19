@@ -5,6 +5,8 @@ library(ggplot2)
 library(ggfortify)
 library(tidyverse)
 library(DESeq2)
+library(gridExtra)
+library(CorLevelPlot)
 
 #--------------------Load data--------------------
 rna <- readRDS("1_Data/Created_data/pre_network_rna.rds")
@@ -203,7 +205,7 @@ plotDendroAndColors(bwnet$dendrograms[[1]], cbind(bwnet$unmergedColors, bwnet$co
 
 #----------Relate modules to specific traits----------
 # My traits will be cell type and if said cell types are cancerous
-traits <- colData[,2]
+traits <- as.numeric(colData[,2])
 
 colData$cell_type <- factor(colData$cell_type, levels = c("Ciliated", "Endothelia", "Lymphocytes", "Macrophages", 
                                                           "Smooth_muscle_cells", "Stromal_fibroblasts", "Unciliated_epithelia_1"))
@@ -212,99 +214,139 @@ ce_type_out <- binarizeCategoricalColumns(as.data.frame(colData$cell_type),
                                           includePairwise = F,
                                           includeLevelVsAll = T,
                                           minCount = 1)
+# Apparently, the first cell type is not being detected, so it will be manually added
+ce_type_out$`colData$cell_type.Ciliated.vs.all` <- c(1,0,0,0,0,0,1,0,0,0,0,0,0)
+ce_type_out <- ce_type_out[,c(7,1,2,3,4,5,6)] # Reorder columns
 
-ce_type_out
-
-
-
-
-# 6A. Relate modules to traits --------------------------------------------------
-# module trait associations
-
-
-
-# create traits file - binarize categorical variables
-traits <- colData %>% 
-  mutate(disease_state_bin = ifelse(grepl('COVID', disease_state), 1, 0)) %>% 
-  select(8)
-
-
-# binarize categorical variables
-
-colData$severity <- factor(colData$severity, levels = c("Healthy", "Convalescent", "ICU", "Moderate", "Severe"))
-
-severity.out <- binarizeCategoricalColumns(colData$severity,
-                                           includePairwise = FALSE,
-                                           includeLevelVsAll = TRUE,
-                                           minCount = 1)
-
-
-traits <- cbind(traits, severity.out)
-
+# Combine binarized traits
+traits <- cbind(traits, ce_type_out)
+rownames(traits) <- rownames(module_eigengenes)
 
 # Define numbers of genes and samples
 nSamples <- nrow(norm.counts)
 nGenes <- ncol(norm.counts)
 
-
 module.trait.corr <- cor(module_eigengenes, traits, use = 'p')
 module.trait.corr.pvals <- corPvalueStudent(module.trait.corr, nSamples)
 
-
-
 # visualize module-trait association as a heatmap
-
 heatmap.data <- merge(module_eigengenes, traits, by = 'row.names')
-
 head(heatmap.data)
 
 heatmap.data <- heatmap.data %>% 
   column_to_rownames(var = 'Row.names')
 
-
-
-
 CorLevelPlot(heatmap.data,
-             x = names(heatmap.data)[18:22],
+             x = names(heatmap.data)[18:25],
              y = names(heatmap.data)[1:17],
              col = c("blue1", "skyblue", "white", "pink", "red"))
 
-
+CorLevelPlot(heatmap.data, x=names(heatmap.data[1:17]), y = names(heatmap.data[18]))
 
 module.gene.mapping <- as.data.frame(bwnet$colors)
 module.gene.mapping %>% 
   filter(`bwnet$colors` == 'turquoise') %>% 
   rownames()
 
-
-
-# 6B. Intramodular analysis: Identifying driver genes ---------------
-
-
-
+#----------Identifying driver genes for selected modules----------
 # Calculate the module membership and the associated p-values
 
-# The module membership/intramodular connectivity is calculated as the correlation of the eigengene and the gene expression profile. 
-# This quantifies the similarity of all genes on the array to every module.
+# The module membership/intramodular connectivity is calculated as the correlation of the 
+# eigengene and the gene expression profile. This quantifies the similarity of all genes on the array to every module.
 
-module.membership.measure <- cor(module_eigengenes, norm.counts, use = 'p')
-module.membership.measure.pvals <- corPvalueStudent(module.membership.measure, nSamples)
+module_member_measure_cyan <- cor(module_eigengenes$MElightcyan, norm.counts, use = 'p')
+module_member_measure_pvals_cyan <- corPvalueStudent(module_member_measure_cyan, nSamples)
 
+module_member_measure_magenta <- cor(module_eigengenes$MEmagenta, norm.counts, use = 'p')
+module_member_measure_pvals_magenta <- corPvalueStudent(module_member_measure_magenta, nSamples)
 
-module.membership.measure.pvals[1:10,1:10]
-
+module_member_measure_pvals_cyan[1:25]
+module_member_measure_pvals_magenta[1:25]
 
 # Calculate the gene significance and associated p-values
-
-gene.signf.corr <- cor(norm.counts, traits$data.Severe.vs.all, use = 'p')
+gene.signf.corr <- cor(norm.counts, traits$traits, use = 'p')
 gene.signf.corr.pvals <- corPvalueStudent(gene.signf.corr, nSamples)
-
 
 gene.signf.corr.pvals %>% 
   as.data.frame() %>% 
   arrange(V1) %>% 
   head(25)
 
-
 # Using the gene significance you can identify genes that have a high significance for trait of interest 
 # Using the module membership measures you can identify genes with high module membership in interesting modules.
+
+
+module_df <- data.frame(gene_id = names(bwnet$colors), colors = labels2colors(bwnet$colors))
+mergedColors <- labels2colors(bwnet$colors)
+modules_of_interest <- c("lightcyan", "magenta")
+
+
+genes_of_interest = module_df %>%
+  subset(colors %in% modules_of_interest)
+
+expr_of_interest <- norm.counts[,genes_of_interest$gene_id]
+expr_of_interest <- t(expr_of_interest)
+
+TOM <- TOMsimilarityFromExpr(t(expr_of_interest),power = soft_power)
+row.names(TOM) = row.names(expr_of_interest)
+colnames(TOM) = row.names(expr_of_interest)
+
+edge_list <- data.frame(TOM) %>%
+  mutate(gene1 = row.names(.)) %>%
+  pivot_longer(-gene1) %>%
+  dplyr::rename(gene2 = name, correlation = value) %>%
+  unique() %>%
+  subset(!(gene1==gene2))
+
+colors_vec <- c()
+for(i in 1:nrow(edge_list)){
+  colors_vec[i] <- module_df[module_df == edge_list[i,]$gene1,]$colors
+}
+edge_list$module1 <- colors_vec
+
+mm <- c()
+for(i in 899:nrow(edge_list)){
+  ll <- module_df[module_df == edge_list[i,]$gene1,]$colors
+  if(is.na(ll)){
+    mm[i] <- "Unknown" 
+  }else{
+    mm[i] <- ll
+  }
+}
+
+edge_list$module2 <- mm
+
+names_vec <-c()
+f <- 1
+for(i in 1:nrow(edge_list)){
+  if(is.na(edge_list[i,5])){
+    names_vec[f] <- edge_list[i,2]
+    f <- f + 1
+  }
+}
+
+cols_vec <- c()
+f <- 1
+for(i in names_vec){
+  if(identical(module_df[module_df == i,]$colors, character(0)) == T){
+    cols_vec[f] <- "Unknown"
+  }else{
+    cols_vec[f] <- module_df[module_df == i,]$colors
+  }
+  f <- f + 1 
+}
+
+edge_list[,5][1:898,] <- cols_vec
+
+# Manually assign last few module 2 targets
+edge_list[edge_list[,4] == "Unknown",]                     # All pertain to the "lightcyan" module
+edge_list[edge_list[,4] == "Unknown",][,4] <- "lightcyan"
+
+
+head(edge_list)
+
+#---------
+library(igraph)
+
+try1 <- graph_from_edgelist(as.matrix(edge_list[,c(1,2)]))
+

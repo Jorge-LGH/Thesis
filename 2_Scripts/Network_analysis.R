@@ -96,7 +96,7 @@ gsg$allOK                                             # Value == T, therefore no
 
 #### Detect outlier samples (hierarchical clustering)
 htree <- hclust(dist(t(clusters_total_counts)), method = "average") # Hierarchical clustering based on distances between samples
-plot(htree)                                                         # Seems as Cluster_0 may be an outlier
+plot(htree, xlab = "Distance", sub ="")                             # Seems as Cluster_0 may be an outlier
 
 #### Detect outlier samples based on PCA
 pca <- prcomp(t(clusters_total_counts))                         # Performs PCA on given data matrix
@@ -105,12 +105,13 @@ pca.var <- pca$sdev^2                                           # Calculate vari
 pca.var.percent <- round(pca.var/sum(pca.var)*100, digits = 2)  # Calculate percentage of variance explained by each PC
 
 # Plot PCA. Cluster_0 seems to differ from the rest, therefore will be considered outlier
-ggplot(pca.dat, aes(PC1, PC2)) +
+cluster_pca_outlier <- ggplot(pca.dat, aes(PC1, PC2)) +
   geom_point()+
   geom_text(label = rownames(pca.dat), nudge_y = 10000) +
   labs(x = paste0('PC1: ', pca.var.percent[1], ' %'),
        y = paste0('PC2: ', pca.var.percent[2], ' %'))+
   theme_classic()
+cluster_pca_outlier
 
 #### Remove outlier sample
 sample_exclude <- "Cluster_0"                                                           # Excluded samples
@@ -166,7 +167,7 @@ a2 <- ggplot(sft.data, aes(Power, mean.k., label = Power)) +
   labs(x = 'Power', y = 'Mean Connectivity') +
   theme_classic()
 
-grid.arrange(a1, a2, nrow = 2)                   # Selected power will be 18, but could also be 20 or 22
+grid.arrange(a1, a2, nrow = 2)                   # Selected power will be 26, but could also be 28
 
 # Convert matrix to numeric
 norm.counts[] <- sapply(norm.counts, as.numeric) # Assign numerical and normalized gene counts
@@ -275,6 +276,7 @@ GO_results_turq <- GO_results_turq[order(GO_results_turq$Count, decreasing = T),
 fit_turq <- ggplot(GO_results_turq[1:20,], aes(x= reorder(Description, Count), y= Count, fill= Description)) + 
   geom_bar(stat = "identity") + theme_classic()+ coord_flip() + ylab("Gene counts") + NoLegend() +
   xlab("")
+fit_turq
 
 #### Light cyan genes
 GO_results_cyan <- enrichGO(gene = lightcyan_genes, # Set of genes to be analysed
@@ -325,10 +327,6 @@ TOM_turq_30 <- TOM_turq[top_genes, top_genes]  # Subset data
 cyan_net <- graph_from_adjacency_matrix(TOM_cyan, mode = "undirected", weighted = T, diag = F)
 turq_net <- graph_from_adjacency_matrix(TOM_turq_30, mode = "undirected", weighted = T, diag = F)
 
-# Set edges' weight into variables
-turq_weight <- E(turq_net_trimmed)$weight
-cyan_weight <- E(cyan_net_trimmed)$weight
-
 #### Thresholding based on adjacency
 summary(c(TOM_turq_30)) # Find where only 25% of connections remain: 0.1556
 summary(c(TOM_cyan))    # Find where only 25% of connections remain: 0.031478
@@ -339,8 +337,12 @@ turq_net_trimmed <- delete_edges(turq_net, turq_edges_to_trim)   # Remove select
 cyan_edges_to_trim <- E(cyan_net)[E(cyan_net)$weight < 0.031478] # Select edges to delete based on threshold
 cyan_net_trimmed <- delete_edges(cyan_net, cyan_edges_to_trim)   # Remove selected edges
 
-plot.igraph(cyan_net_trimmed, vertex.size = 12, edge.width=E(cyan_net_trimmed)$weight*20)
-plot.igraph(turq_net_trimmed, vertex.size = 12, edge.width=E(turq_net_trimmed)$weight*20)
+# Set edges' weight into variables
+turq_weight <- E(turq_net_trimmed)$weight
+cyan_weight <- E(cyan_net_trimmed)$weight
+
+plot.igraph(cyan_net_trimmed, vertex.size = 12, edge.width=E(cyan_net_trimmed)$weight*40) + title("Light cyan module network")
+plot.igraph(turq_net_trimmed, vertex.size = 12, edge.width=E(turq_net_trimmed)$weight*20) + title("Turquoise module network")
 
 #### Clusterizatrion and centralities
 # Cluster optimal
@@ -375,29 +377,88 @@ walk_cyan <- cluster_walktrap(cyan_net_trimmed, weights = cyan_weight)
 close_turq <- as.data.frame(closeness(turq_net_trimmed, weights = turq_weight))[,1]
 close_cyan <- as.data.frame(closeness(cyan_net_trimmed, weights = cyan_weight))[,1]
 
+#### Turq clusterization plots
+layout(matrix(c(1,2,3,4,5,6), 2, 3, byrow = TRUE))
+plot(cl_opt_turq, turq_net_trimmed)
+plot(edge_b_turq, turq_net_trimmed)
+plot(eigen_turq, turq_net_trimmed)
+plot(fast_turq, turq_net_trimmed)
+plot(walk_turq, turq_net_trimmed)
+plot(opti_turq, turq_net_trimmed)
+
+#### Cyan clusterization plots
+layout(matrix(c(1,2,3,4,5,6), 2, 3, byrow = TRUE))
+plot(cl_opt_cyan, cyan_net_trimmed)
+plot(edge_b_cyan, cyan_net_trimmed)
+plot(eigen_cyan, cyan_net_trimmed)
+plot(fast_cyan, cyan_net_trimmed)
+plot(walk_cyan, cyan_net_trimmed)
+plot(opti_cyan, cyan_net_trimmed)
+
+#### Comparison between communities turquoise
+Cluster_optimal_turq <- c(compare(cl_opt_turq,cl_opt_turq, method = "rand.adjusted"),compare(cl_opt_turq,edge_b_turq, method = "rand.adjusted"),
+                          compare(cl_opt_turq,eigen_turq, method = "rand.adjusted"),compare(cl_opt_turq,fast_turq, method = "rand.adjusted"),
+                          compare(cl_opt_turq,walk_turq, method = "rand.adjusted"),compare(cl_opt_turq,opti_turq, method = "rand.adjusted"))
+
+Edge_bet_turq <- c(compare(edge_b_turq,cl_opt_turq, method = "rand.adjusted"),compare(edge_b_turq,edge_b_turq, method = "rand.adjusted"),
+                   compare(edge_b_turq,eigen_turq, method = "rand.adjusted"),compare(edge_b_turq,fast_turq, method = "rand.adjusted"),
+                   compare(edge_b_turq,walk_turq, method = "rand.adjusted"),compare(edge_b_turq,opti_turq, method = "rand.adjusted"))
+
+Eigen_cent_turq <- c(compare(eigen_turq,cl_opt_turq, method = "rand.adjusted"),compare(eigen_turq,edge_b_turq, method = "rand.adjusted"),
+                     compare(eigen_turq,eigen_turq, method = "rand.adjusted"),compare(eigen_turq,fast_turq, method = "rand.adjusted"),
+                     compare(eigen_turq,walk_turq, method = "rand.adjusted"),compare(eigen_turq,opti_turq, method = "rand.adjusted"))
+
+Fast_cent_turq <- c(compare(fast_turq,cl_opt_turq, method = "rand.adjusted"),compare(fast_turq,edge_b_turq, method = "rand.adjusted"),
+                    compare(fast_turq,eigen_turq, method = "rand.adjusted"),compare(fast_turq,fast_turq, method = "rand.adjusted"),
+                    compare(fast_turq,walk_turq, method = "rand.adjusted"),compare(fast_turq,opti_turq, method = "rand.adjusted"))
+
+Walk_cent_turq <- c(compare(walk_turq,cl_opt_turq, method = "rand.adjusted"),compare(walk_turq,edge_b_turq, method = "rand.adjusted"),
+                    compare(walk_turq,eigen_turq, method = "rand.adjusted"),compare(walk_turq,fast_turq, method = "rand.adjusted"),
+                    compare(walk_turq,walk_turq, method = "rand.adjusted"),compare(walk_turq,opti_turq, method = "rand.adjusted"))
+
+Opti_cent_turq <- c(compare(opti_turq,cl_opt_turq, method = "rand.adjusted"),compare(opti_turq,edge_b_turq, method = "rand.adjusted"),
+                    compare(opti_turq,eigen_turq, method = "rand.adjusted"),compare(opti_turq,fast_turq, method = "rand.adjusted"),
+                    compare(opti_turq,walk_turq, method = "rand.adjusted"),compare(opti_turq,opti_turq, method = "rand.adjusted"))
+
+compare_clust_turq <- matrix(c(Cluster_optimal_turq,Edge_bet_turq,Eigen_cent_turq,Fast_cent_turq,Walk_cent_turq,Opti_cent_turq), ncol = 6)
+compare_clust_turq <- as.data.frame(compare_clust_turq)
+names_mat <- c("Cl_optimal", "Edge_between", "Eigen_cluster", "Fast_cluster", "Walk_cluster","Opti_cluster")
+rownames(compare_clust_turq) <- names_mat
+colnames(compare_clust_turq) <- names_mat
+compare_clust_turq
+
+#### Comparison between communities cyan
+Cluster_optimal_cyan <- c(compare(cl_opt_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(cl_opt_cyan,edge_b_cyan, method = "rand.adjusted"),
+                          compare(cl_opt_cyan,eigen_cyan, method = "rand.adjusted"),compare(cl_opt_cyan,fast_cyan, method = "rand.adjusted"),
+                          compare(cl_opt_cyan,walk_cyan, method = "rand.adjusted"),compare(cl_opt_cyan,opti_cyan, method = "rand.adjusted"))
+
+Edge_bet_cyan <- c(compare(edge_b_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(edge_b_cyan,edge_b_cyan, method = "rand.adjusted"),
+                   compare(edge_b_cyan,eigen_cyan, method = "rand.adjusted"),compare(edge_b_cyan,fast_cyan, method = "rand.adjusted"),
+                   compare(edge_b_cyan,walk_cyan, method = "rand.adjusted"),compare(edge_b_cyan,opti_cyan, method = "rand.adjusted"))
+
+Eigen_cent_cyan <- c(compare(eigen_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(eigen_cyan,edge_b_cyan, method = "rand.adjusted"),
+                     compare(eigen_cyan,eigen_cyan, method = "rand.adjusted"),compare(eigen_cyan,fast_cyan, method = "rand.adjusted"),
+                     compare(eigen_cyan,walk_cyan, method = "rand.adjusted"),compare(eigen_cyan,opti_cyan, method = "rand.adjusted"))
+
+Fast_cent_cyan <- c(compare(fast_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(fast_cyan,edge_b_cyan, method = "rand.adjusted"),
+                    compare(fast_cyan,eigen_cyan, method = "rand.adjusted"),compare(fast_cyan,fast_cyan, method = "rand.adjusted"),
+                    compare(fast_cyan,walk_cyan, method = "rand.adjusted"),compare(fast_cyan,opti_cyan, method = "rand.adjusted"))
+
+Walk_cent_cyan <- c(compare(walk_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(walk_cyan,edge_b_cyan, method = "rand.adjusted"),
+                    compare(walk_cyan,eigen_cyan, method = "rand.adjusted"),compare(walk_cyan,fast_cyan, method = "rand.adjusted"),
+                    compare(walk_cyan,walk_cyan, method = "rand.adjusted"),compare(walk_cyan,opti_cyan, method = "rand.adjusted"))
+
+Opti_cent_cyan <- c(compare(opti_cyan,cl_opt_cyan, method = "rand.adjusted"),compare(opti_cyan,edge_b_cyan, method = "rand.adjusted"),
+                    compare(opti_cyan,eigen_cyan, method = "rand.adjusted"),compare(opti_cyan,fast_cyan, method = "rand.adjusted"),
+                    compare(opti_cyan,walk_cyan, method = "rand.adjusted"),compare(opti_cyan,opti_cyan, method = "rand.adjusted"))
+
+compare_clust_cyan <- matrix(c(Cluster_optimal_cyan,Edge_bet_cyan,Eigen_cent_cyan,Fast_cent_cyan,Walk_cent_cyan,Opti_cent_cyan), ncol = 6)
+compare_clust_cyan <- as.data.frame(compare_clust_cyan)
+names_mat <- c("Cl_optimal", "Edge_between", "Eigen_cluster", "Fast_cluster", "Walk_cluster","Opti_cluster")
+rownames(compare_clust_cyan) <- names_mat
+colnames(compare_clust_cyan) <- names_mat
+compare_clust_cyan
+
 #-----Cytoscape
 createNetworkFromIgraph(turq_net_trimmed, title = "Trimmed turquoise module network")
 createNetworkFromIgraph(cyan_net_trimmed, title = "Trimmed cyan module network")
-
-ff <- cbind(bet_turq,ei_turq,close_turq)
-cor(ff, use = "complete.obs")
-
-
-
-
-
-
-#----------Intramodular analysis----------
-# Module names
-MEs0 <- moduleEigengenes(norm.counts, moduleColors)$eigengenes
-MEs <- orderMEs(MEs0)
-modNames <- substring(names(MEs), 3)
-
-# Calculate module membership: correlation between the module eigengene and the gene expression profile
-module_membership_measure <- cor(module_eigengenes, norm.counts, use = 'p')
-module_membership_measure_pvals <- corPvalueStudent(module_membership_measure, nSamples)
-module_membership_measure_pvals[,1:10]
-
-# Calculate the gene significance: the absolute value of the correlation between the gene and the trait
-gene_signf_corr <- cor(norm.counts, traits$Cancerous, use = 'p')
-gene_signf_corr_pvals <- corPvalueStudent(gene_signf_corr, nSamples)

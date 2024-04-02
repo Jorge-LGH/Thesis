@@ -60,7 +60,7 @@ rna <- FindClusters(rna,resolution = 0.7)
 rna <- RunUMAP(rna,dims = 1:50)
 Idents(rna) <- "RNA_snn_res.0.7"
 
-# Proceed with CNV
+#-------------Proceed with CNV------
 counts_matrix = GetAssayData(rna, layer="counts") # Get expression matrix
 
 # Identify immune clusters

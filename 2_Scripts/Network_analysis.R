@@ -8,8 +8,7 @@ library(DESeq2)
 library(gridExtra)
 library(CorLevelPlot)
 library(igraph)
-library(clusterProfiler)
-library(org.Hs.eg.db)
+library(enrichR)
 library(RCy3)
 
 #--------------------Load data--------------------
@@ -260,32 +259,19 @@ module.gene.mapping <- as.data.frame(bwnet$colors)                              
 turq_genes <- module.gene.mapping %>% filter(`bwnet$colors` == 'turquoise') %>% rownames()       # Genes associated to turquoise module (Cancerous)
 lightcyan_genes <- module.gene.mapping %>% filter(`bwnet$colors` == 'lightcyan') %>% rownames()  # Genes associated to light cyan module (Ciliated)
 
-#----------GO analysis----------
+#----------Gene enrichment analysis----------
+# Set databases for enrichment analysis
+dbs <- listEnrichrDbs()
+View(dbs)
+dbs <- c("GO_Molecular_Function_2023", "GO_Biological_Process_2023")
+
 #### Turquoise genes
-GO_results_turq <- enrichGO(gene = turq_genes,       # Set of genes to be analysed
-                            OrgDb = 'org.Hs.eg.db',  # Organism database
-                            keyType = "SYMBOL",      # Gene symbol
-                            ont = "MF")              # Ontology for biological processes and molecular function
-
-# Format Data
-GO_results_turq <- as.data.frame(GO_results_turq)                                 # As dataframe
-GO_results_turq <- GO_results_turq[order(GO_results_turq$Count, decreasing = T),] # Sort by GO counts
-
-# Plot gene ontology
-fit_turq <- ggplot(GO_results_turq[1:20,], aes(x= reorder(Description, Count), y= Count, fill= Description)) + 
-  geom_bar(stat = "identity") + theme_classic()+ coord_flip() + ylab("Gene counts") + NoLegend() +
-  xlab("")
+enriched_t <- enrichr(turq_genes, dbs)
+plotEnrich(enriched_t[[1]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value", xlab = "") 
 
 #### Light cyan genes
-GO_results_cyan <- enrichGO(gene = lightcyan_genes, # Set of genes to be analysed
-                            OrgDb = 'org.Hs.eg.db', # Organism database
-                            keyType = "SYMBOL",     # Gene symbol
-                            ont = "ALL")            # Ontology for biological processes and molecular function
-
-# Format Data
-GO_results_cyan <- as.data.frame(GO_results_cyan)                                 # As dataframe
-GO_results_cyan <- GO_results_cyan[order(GO_results_cyan$Count, decreasing = T),] # Sort by GO counts
-View(GO_results_cyan)
+enriched_c <- enrichr(lightcyan_genes, dbs)
+plotEnrich(enriched_c[[1]], showTerms = 20, numChar = 40, y = "Count", orderBy = "P.value", xlab = "")
 
 #----------Edge list creation for network----------
 module_edge_df <- data.frame(gene_id = names(bwnet$colors), colors = bwnet$colors)   # Dataframe with modules' genes and colors
@@ -313,21 +299,17 @@ colnames(TOM_turq) = row.names(gene_expr_turq)                                  
 diag(TOM_turq) <- 0                                                                  # Make all diagonal values turn to 0
 
 #---------Reduce size for bigger module----------
-top_30 <- 30                                   # Top 30 
-norm_counts_turq <- norm.counts[,turq_genes]   # Get normalized counts only for the genes associated with turquoise module
-IMConn <- softConnectivity(norm_counts_turq)   # Construct adjacency matrix for each node (gene) and calculates connectivity
-                                               # which is the sum of the adjacency to the other nodes
-top_genes <- (rank(-IMConn) <= top_30)         # Select which genes are the top 30
-TOM_turq_30 <- TOM_turq[top_genes, top_genes]  # Subset data 
+top_30 <- 30                                                     # Top 30 
+norm_counts_turq <- norm.counts[,turq_genes]                     # Get normalized counts only for the genes associated with turquoise module
+IMConn <- softConnectivity(norm_counts_turq, power = soft_power) # Construct adjacency matrix for each node (gene) and calculates connectivity
+                                                                 # which is the sum of the adjacency to the other nodes
+top_genes <- (rank(-IMConn) <= top_30)                           # Select which genes are the top 30
+TOM_turq_30 <- TOM_turq[top_genes, top_genes]                    # Subset data 
 
 #---------Network Visualization and analysis----------
 #### Create igraph network
 cyan_net <- graph_from_adjacency_matrix(TOM_cyan, mode = "undirected", weighted = T, diag = F)
 turq_net <- graph_from_adjacency_matrix(TOM_turq_30, mode = "undirected", weighted = T, diag = F)
-
-# Set edges' weight into variables
-turq_weight <- E(turq_net_trimmed)$weight
-cyan_weight <- E(cyan_net_trimmed)$weight
 
 #### Thresholding based on adjacency
 summary(c(TOM_turq_30)) # Find where only 25% of connections remain: 0.1556
@@ -339,6 +321,11 @@ turq_net_trimmed <- delete_edges(turq_net, turq_edges_to_trim)   # Remove select
 cyan_edges_to_trim <- E(cyan_net)[E(cyan_net)$weight < 0.031478] # Select edges to delete based on threshold
 cyan_net_trimmed <- delete_edges(cyan_net, cyan_edges_to_trim)   # Remove selected edges
 
+# Set edges' weight into variables
+turq_weight <- E(turq_net_trimmed)$weight
+cyan_weight <- E(cyan_net_trimmed)$weight
+
+# Plot
 plot.igraph(cyan_net_trimmed, vertex.size = 12, edge.width=E(cyan_net_trimmed)$weight*20)
 plot.igraph(turq_net_trimmed, vertex.size = 12, edge.width=E(turq_net_trimmed)$weight*20)
 
@@ -379,25 +366,5 @@ close_cyan <- as.data.frame(closeness(cyan_net_trimmed, weights = cyan_weight))[
 createNetworkFromIgraph(turq_net_trimmed, title = "Trimmed turquoise module network")
 createNetworkFromIgraph(cyan_net_trimmed, title = "Trimmed cyan module network")
 
-ff <- cbind(bet_turq,ei_turq,close_turq)
+ff <- cbind(bet_turq, ei_turq, close_turq)
 cor(ff, use = "complete.obs")
-
-
-
-
-
-
-#----------Intramodular analysis----------
-# Module names
-MEs0 <- moduleEigengenes(norm.counts, moduleColors)$eigengenes
-MEs <- orderMEs(MEs0)
-modNames <- substring(names(MEs), 3)
-
-# Calculate module membership: correlation between the module eigengene and the gene expression profile
-module_membership_measure <- cor(module_eigengenes, norm.counts, use = 'p')
-module_membership_measure_pvals <- corPvalueStudent(module_membership_measure, nSamples)
-module_membership_measure_pvals[,1:10]
-
-# Calculate the gene significance: the absolute value of the correlation between the gene and the trait
-gene_signf_corr <- cor(norm.counts, traits$Cancerous, use = 'p')
-gene_signf_corr_pvals <- corPvalueStudent(gene_signf_corr, nSamples)

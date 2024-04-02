@@ -155,7 +155,7 @@ levels(factor(rna$cell.type))
 df %>% 
   dplyr::mutate(cell.type = factor(Cluster,levels = c(11,3,9,10,0,6,8,12,7,1,2,4,5,13))) %>% 
   ggplot(aes(fill=Cluster, y=Cells, x= fct_rev(cell.type))) + geom_bar(stat="identity")+
-  coord_flip()+theme_classic()+xlab("Clusters")+ylab("Cells per cluster")
+  coord_flip()+theme_classic()+xlab("Clusters")+ylab("Cells per cluster") + NoLegend()
 
 #--------------------Cancer Cell detection-------------------
 meta <- rna@meta.data
@@ -240,8 +240,10 @@ for(i in 1:length(rna$seurat_clusters)){
   }
 }
 
+rna.df$cancer <- rna@meta.data$cancer
+
 # Plot with endometrial cancer clusters assigned as well as other cell types
-p6 <- ggplot(rna.df,aes(x = UMAP_1,y=UMAP_2,color = cancer))+
+p6 <- ggplot(rna.df, aes(x = UMAP_1,y=UMAP_2,color = cancer))+
   geom_point(size = .1)+
   theme_classic()+
   theme(plot.title = element_text(face = "bold"))+
